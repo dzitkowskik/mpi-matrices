@@ -1,13 +1,7 @@
 #include <stdio.h>
 #include <mpi.h>
-#include <cstdlib>
 #include <sstream>
-#include <fstream>
 #include <vector>
-#include <array>
-#include <algorithm>
-#include <tuple>
-#include <stdexcept>
 #include "sparse_matrix.h"
 #include "mpimatrix.h"
 
@@ -33,8 +27,8 @@ int main (int argc, char *argv[])
   MpiMatrix m1(rank, size);
   MpiMatrix m2(rank, size);
 
-  m1.loadFromFile("matrix1", column_wise);
-  m2.loadFromFile("matrix2", row_wise);
+  m1.loadFromFile("/tmp/matrix1", column_wise);
+  m2.loadFromFile("/tmp/matrix2", row_wise);
 
   MpiMatrix mult_result = m1*m2;
   MpiMatrix add_result = m1+m2;

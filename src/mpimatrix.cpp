@@ -1,12 +1,9 @@
-#include <stdio.h>
 #include <cstdlib>
 #include <sstream>
 #include <fstream>
 #include <vector>
 #include <array>
 #include <algorithm>
-#include <tuple>
-#include <stdexcept>
 #include "mpimatrix.h"
 
 using namespace std;
@@ -80,7 +77,7 @@ MpiMatrix MpiMatrix::operator+(const MpiMatrix &m)
          if (matrix.width != m.matrix.height)
             throw std::runtime_error("Dimensions of matrices do not match");
 
-        if (matrix.width < processors_cnt)
+        if (matrix.width < processors_cnt || processors_cnt == 1)
         {
             // Do sequential multiplication
             result = sparse_matrix(
@@ -154,7 +151,7 @@ MpiMatrix MpiMatrix::operator*(const MpiMatrix &m)
         if (matrix.width != m.matrix.height)
             throw std::runtime_error("Dimensions of matrices do not match");
 
-        if (matrix.width < processors_cnt)
+        if (matrix.width < processors_cnt || processors_cnt == 1)
         {
             // Do sequential multiplication
             result = sparse_matrix(

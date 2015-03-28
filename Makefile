@@ -106,6 +106,10 @@ all: $(BIN_PATH)/$(PROGRAM_NAME)
 run:
 	mpirun $(HOSTS) $(PROGRAM_NAME)
 
+.PHONY: runlocal
+runlocal:
+	mpirun -np 4 ./$(PROGRAM_NAME)
+
 ################################################################################
 
 $(BIN_PATH)/$(PROGRAM_NAME): $(OBJS)

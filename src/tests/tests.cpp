@@ -3,7 +3,6 @@
 #include "../mpimatrix.h"
 #include "../generator.h"
 #include "../dense_matrix.h"
-#include <time.h>
 #include <ctime>
 
 #define RANDOM_TESTS_COUNT 5
