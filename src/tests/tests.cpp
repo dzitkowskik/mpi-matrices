@@ -47,9 +47,9 @@ int test_multiplication(int rank, int size, double &mpi_duration, double &normal
 
             printf("Result:\n");
             actual.printDense();
-        
+
             printf("Expected:\n");
-            expected.printDense();   
+            expected.printDense();
         }
 
         test_result = (expected == actual);

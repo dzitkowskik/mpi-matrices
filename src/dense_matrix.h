@@ -26,7 +26,7 @@ public:
   {
     initEmptyData();
   }
-  dense_matrix(vector<sparse_elem> elements)
+  dense_matrix(vector<sparse_matrix_elem> elements)
   {
     initSize(elements);
     initEmptyData();
@@ -34,10 +34,10 @@ public:
   }
   dense_matrix(const sparse_matrix& matrix)
   {
-    width = matrix.width;
-    height = matrix.height;
+    width = matrix.getWidth();
+    height = matrix.getHeight();
     initEmptyData();
-    initData(matrix.raw_data);
+    initData(matrix.getRawData());
   }
   ~dense_matrix(){}
   dense_matrix(const dense_matrix& m)
@@ -47,21 +47,21 @@ public:
     width = m.width;
   }
 
-  void initSize(vector<sparse_elem> elements)
+  void initSize(vector<sparse_matrix_elem> elements)
   {
     height=0;
     width=0;
     for (auto it=elements.begin(); it != elements.end(); it++)
     {
-      if(it->row > height) height = it->row;
-      if(it->col > width) width = it->col;
+      if(it->row+1 > height) height = it->row+1;
+      if(it->col+1 > width) width = it->col+1;
     }
   }
 
-  void initData(vector<sparse_elem> elements)
+  void initData(vector<sparse_matrix_elem> elements)
   {
     for (auto it=elements.begin(); it != elements.end(); it++)
-      data[(it->col)-1][(it->row)-1] = it->value;
+      data[it->col][it->row] = it->value;
   }
 
   void initEmptyData()
