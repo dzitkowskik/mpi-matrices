@@ -87,6 +87,12 @@ public:
 
 	int getHeight() const
 	{ return height; }
+
+	sparse_vector &operator[](size_t el)
+	{ return data[el]; }
+
+	const sparse_vector &operator[](size_t el) const
+	{ return data[el]; }
 };
 
 

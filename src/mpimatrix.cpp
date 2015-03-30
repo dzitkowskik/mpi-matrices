@@ -199,5 +199,35 @@ MpiMatrix MpiMatrix::operator*(const MpiMatrix &m)
 
 void MpiMatrix::LU(MpiMatrix &L, MpiMatrix &U)
 {
+	int done = 0;
+	int size = matrix.getWidth();
+	if (rank == 0)
+	{
+		if (matrix.getWidth() < processors_cnt || processors_cnt == 1)
+		{
+			// Do sequential LU
+			for(int k=0; k<size; k++)
+			{
+				//matrix.divCol(k, matrix.get(k,k));
+				for(int i=k+1; i < size; i++)
+				{
+					for(int j=k+1; j < matrix.getHeight(); j++)
+					{
 
+					}
+				}
+			}
+			done = 1;
+		}
+
+		// Send submatrices to processors
+	}
+	if (rank > 0)
+	{
+
+	}
+	if (rank == 0)
+	{
+
+	}
 }
