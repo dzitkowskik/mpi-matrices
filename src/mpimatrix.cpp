@@ -206,12 +206,12 @@ void MpiMatrix::LU(MpiMatrix &L, MpiMatrix &U)
 		if (matrix.getWidth() < processors_cnt || processors_cnt == 1)
 		{
 			// Do sequential LU
-			for(int k=0; k<size; k++)
+			for (int k = 0; k < size; k++)
 			{
 				//matrix.divCol(k, matrix.get(k,k));
-				for(int i=k+1; i < size; i++)
+				for (int i = k + 1; i < size; i++)
 				{
-					for(int j=k+1; j < matrix.getHeight(); j++)
+					for (int j = k + 1; j < matrix.getHeight(); j++)
 					{
 
 					}
