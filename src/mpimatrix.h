@@ -7,54 +7,31 @@
 
 class MpiMatrix
 {
-public:
+private:
 	int rank;
 	int processors_cnt;
 	sparse_matrix matrix;
+	MPI_Datatype sparse_elem_type;
 
-	MpiMatrix()
-	{ init(); }
+public:
+	MpiMatrix();
+	MpiMatrix(int rank, int proc_cnt);
+	MpiMatrix(int rank, int proc_cnt, sparse_matrix sp);
+	MpiMatrix(const MpiMatrix &m);
+	~MpiMatrix();
 
-	MpiMatrix(int rank, int proc_cnt)
-			: rank(rank), processors_cnt(proc_cnt)
-	{ init(); }
-
-	MpiMatrix(int rank, int proc_cnt, sparse_matrix sp)
-			: rank(rank), processors_cnt(proc_cnt), matrix(sp)
-	{ init(); }
-
-	MpiMatrix(const MpiMatrix &m)
-	{
-		matrix = m.matrix;
-		rank = m.rank;
-		processors_cnt = m.processors_cnt;
-		sparse_elem_type = m.sparse_elem_type;
-	}
-
-	~MpiMatrix()
-	{ }
-
+public:
 	void print();
-
 	void loadFromFile(const char *path, direction dir);
-
 	MpiMatrix operator+(const MpiMatrix &m);
-
 	MpiMatrix operator*(const MpiMatrix &m);
-
-	void LU(MpiMatrix &L, MpiMatrix &U);
+	void LU(MpiMatrix &L, MpiMatrix &U) const;
 
 private:
-
 	void init();
-
 	void createSparseElemDatatype();
-
 	void sendMatrix(int node, sparse_matrix matrix);
-
 	sparse_matrix receiveMatrix(int node, direction dir);
-
-	MPI_Datatype sparse_elem_type;
 };
 
 #endif

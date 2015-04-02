@@ -197,25 +197,25 @@ MpiMatrix MpiMatrix::operator*(const MpiMatrix &m)
 	return MpiMatrix(rank, processors_cnt, result);
 }
 
-void MpiMatrix::LU(MpiMatrix &L, MpiMatrix &U)
+void MpiMatrix::LU(MpiMatrix &L, MpiMatrix &U) const
 {
 	int done = 0;
-	int size = matrix.getWidth();
+	int width = matrix.getWidth();
+	int height = matrix.getHeight();
+
+	sparse_matrix local(matrix);
+
 	if (rank == 0)
 	{
-		if (matrix.getWidth() < processors_cnt || processors_cnt == 1)
+		if (width < processors_cnt || processors_cnt == 1)
 		{
 			// Do sequential LU
-			for (int k = 0; k < size; k++)
+			for (int k = 0; k < width; k++)
 			{
-				//matrix.divCol(k, matrix.get(k,k));
-				for (int i = k + 1; i < size; i++)
-				{
-					for (int j = k + 1; j < matrix.getHeight(); j++)
-					{
-
-					}
-				}
+				local[k] /= local[k][k];
+				for (int i = k + 1; i < width; i++)
+					for (int j = k + 1; j < height; j++)
+						local[i][j] = local[i][j] - local[i][k] * local[k][j];
 			}
 			done = 1;
 		}
@@ -230,4 +230,29 @@ void MpiMatrix::LU(MpiMatrix &L, MpiMatrix &U)
 	{
 
 	}
+
+	L = MpiMatrix(rank, processors_cnt, local.getL());
+	U = MpiMatrix(rank, processors_cnt, local.getU());
 }
+
+MpiMatrix::MpiMatrix()
+{ init(); }
+
+MpiMatrix::MpiMatrix(int rank, int proc_cnt)
+		: rank(rank), processors_cnt(proc_cnt)
+{ init(); }
+
+MpiMatrix::MpiMatrix(int rank, int proc_cnt, sparse_matrix sp)
+		: rank(rank), processors_cnt(proc_cnt), matrix(sp)
+{ init(); }
+
+MpiMatrix::MpiMatrix(const MpiMatrix &m)
+{
+	matrix = m.matrix;
+	rank = m.rank;
+	processors_cnt = m.processors_cnt;
+	sparse_elem_type = m.sparse_elem_type;
+}
+
+MpiMatrix::~MpiMatrix()
+{ }

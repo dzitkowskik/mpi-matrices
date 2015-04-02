@@ -29,7 +29,7 @@ std::vector<sparse_matrix_elem> sparse_vector::operator*(const sparse_vector &m)
 	if (dir == row_wise && m.dir == column_wise) // result will be one double
 	{
 		for (int i = 0; i < length; i++)
-			value += this->get(i) * m.get(i);
+			value += get(i) * m.get(i);
 		result.push_back(sparse_matrix_elem{0, 0, value});
 	}
 	else if (dir == m.dir) // result will be vector
@@ -64,6 +64,16 @@ sparse_vector sparse_vector::operator*(const double &m)
 	if (m == 0) result.clear();
 	for (int i = 0; i < result.size(); i++)
 		result.mul(i, m);
+	return result;
+}
+
+sparse_vector sparse_vector::operator/(const double &m)
+{
+	auto result = sparse_vector(*this);
+	if (m == 0)
+		throw std::runtime_error("division by zero");
+	for (int i = 0; i < result.size(); i++)
+		result.div(i, m);
 	return result;
 }
 
@@ -126,3 +136,13 @@ sparse_vector &sparse_vector::operator-=(const double &v)
 	clean();
 	return *this;
 }
+
+sparse_vector &sparse_vector::operator/=(const double &v)
+{
+	if (v == 0)
+		throw std::runtime_error("division by zero");
+	for (int i = 0; i < size(); i++)
+		div(i, v);
+	return *this;
+}
+

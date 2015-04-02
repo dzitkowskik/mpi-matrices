@@ -3,7 +3,6 @@
 // Copyright (c) 2015 Karol Dzitkowski. All rights reserved.
 //
 
-
 #ifndef __sparse_matrix_H_
 #define __sparse_matrix_H_
 
@@ -19,6 +18,7 @@ using namespace std;
 
 class sparse_matrix
 {
+// FIELDS
 private:
 	vector<sparse_matrix_elem> raw_data;
 	vector<sparse_vector> data;
@@ -26,74 +26,39 @@ private:
 	int width;
 	int height;
 
+// CONSTRUCTORS
 public:
-	sparse_matrix() : width(0), height(0)
-	{ }
+	sparse_matrix();
+	sparse_matrix(int width, int height);
+	sparse_matrix(int width, int height, direction d);
+	sparse_matrix(vector<sparse_matrix_elem> elements, int width, int height, direction d);
+	~sparse_matrix();
+	sparse_matrix(const sparse_matrix &m);
 
-	sparse_matrix(int width, int height) : width(width), height(height)
-	{ }
-
-	sparse_matrix(int width, int height, direction d) : dir(d), width(width), height(height)
-	{ init(); }
-
-	sparse_matrix(vector<sparse_matrix_elem> elements, int width, int height, direction d)
-			: raw_data(elements), dir(d), width(width), height(height)
-	{
-		init();
-		if (dir == column_wise) createMatrixByCols(elements);
-		else if (dir == row_wise) createMatrixByRows(elements);
-	}
-
-	~sparse_matrix()
-	{ }
-
-	sparse_matrix(const sparse_matrix &m)
-	{
-		dir = m.dir;
-		data = m.data;
-		raw_data = m.raw_data;
-		width = m.width;
-		height = m.height;
-	}
-
-	void resize(int w, int h);
-
-	void transpose();
-
-	void init();
-
-	void printSparse();
-
-	void createMatrixByRows(vector<sparse_matrix_elem> elements);
-
-	void createMatrixByCols(vector<sparse_matrix_elem> elements);
-
-	vector<sparse_matrix> splitToN(int N) const;
-
-	static sparse_matrix fromFile(const char *name, direction d);
-
+// OPERATORS
+public:
 	sparse_matrix operator+(const sparse_matrix &m);
-
 	sparse_matrix operator*(const sparse_matrix &m);
+	sparse_vector & operator[](size_t el);
+	const sparse_vector & operator[](size_t el) const;
 
-	const vector<sparse_matrix_elem> &getRawData() const
-	{ return raw_data; }
-
-	int numberOfElements()
-	{ return raw_data.size(); }
-
-	int getWidth() const
-	{ return width; }
-
-	int getHeight() const
-	{ return height; }
-
-	sparse_vector &operator[](size_t el)
-	{ return data[el]; }
-
-	const sparse_vector &operator[](size_t el) const
-	{ return data[el]; }
+// METHODS
+public:
+	void resize(int w, int h);
+	void transpose();
+	void init();
+	void clean();
+	void printSparse();
+	void createMatrixByRows(vector<sparse_matrix_elem> elements);
+	void createMatrixByCols(vector<sparse_matrix_elem> elements);
+	vector<sparse_matrix> splitToN(int N) const;
+	static sparse_matrix fromFile(const char *name, direction d);
+	const vector<sparse_matrix_elem> & getRawData() const;
+	int numberOfElements();
+	int getWidth() const;
+	int getHeight() const;
+	sparse_matrix getL();
+	sparse_matrix getU();
 };
-
 
 #endif //__sparse_matrix_H_

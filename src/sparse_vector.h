@@ -45,9 +45,12 @@ public:
 	sparse_vector operator+(const double &m);
 	sparse_vector operator-(const double &m);
 	sparse_vector operator*(const double &m);
+	sparse_vector operator/(const double &m);
+
 	sparse_vector &operator+=(const double &v);
 	sparse_vector &operator-=(const double &v);
 	sparse_vector &operator*=(const double &v);
+	sparse_vector &operator/=(const double &v);
 
 // GETTERS AND SETTERS
 public:
@@ -67,6 +70,8 @@ public:
 	void sub(int index, double value);
 	void mul(std::pair<int, double> item);
 	void mul(int index, double value);
+	void div(std::pair<int, double> item);
+	void div(int index, double value);
 
 	// UTILITY
 	void reset(int len);

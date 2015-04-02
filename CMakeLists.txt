@@ -20,10 +20,13 @@ set(SOURCE_FILES
     src/tests/tests.cpp
     src/mpimatrix.cpp
     src/mpimatrix.h
+    src/sparse_vector.cpp
+    src/sparse_vector_op.cpp
+    src/sparse_vector.h
     src/sparse_matrix.cpp
     src/sparse_matrix.h)
 
-add_executable(mpi_matrices ${SOURCE_FILES} src/sparse_vector.cpp src/sparse_vector.h src/sparse_matrix_elem.h src/direction.h src/sparse_vector_op.h src/sparse_vector_op.cpp)
+add_executable(mpi_matrices ${SOURCE_FILES})
 
 target_link_libraries(mpi_matrices ${MPI_LIBRARIES})
 

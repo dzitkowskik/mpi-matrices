@@ -120,6 +120,24 @@ void sparse_vector::mul(int index, double value)
 	this->mul(std::make_pair(index, value));
 }
 
+void sparse_vector::div(std::pair<int, double> item)
+{
+	if (item.second == 0)
+		throw std::runtime_error("division by zero");
+	if (item.first >= length)
+		throw std::runtime_error("mul a non existing item");
+	if (data.count(item.first) > 0)
+	{
+		if (item.second == 0) data.erase(item.first);
+		data[item.first] /= item.second;
+	}
+}
+
+void sparse_vector::div(int index, double value)
+{
+	this->div(std::make_pair(index, value));
+}
+
 // OTHER
 
 std::vector<sparse_matrix_elem> sparse_vector::getElements(direction d, int x) const
@@ -133,3 +151,4 @@ std::vector<sparse_matrix_elem> sparse_vector::getElements(direction d, int x) c
 			result.push_back(sparse_matrix_elem{it->first, x, it->second});
 	return result;
 }
+

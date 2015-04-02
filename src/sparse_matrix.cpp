@@ -47,22 +47,22 @@ void sparse_matrix::transpose()
 
 void sparse_matrix::createMatrixByRows(vector<sparse_matrix_elem> elements)
 {
-	for(auto it= elements.begin(); it != elements.end(); it++)
+	for (auto it = elements.begin(); it != elements.end(); it++)
 	{
 		auto elem = *it;
-		if(height < elem.row+1) resize(width, elem.row+1);
-		if(width < elem.col+1) width = elem.col+1;
+		if (height < elem.row + 1) resize(width, elem.row + 1);
+		if (width < elem.col + 1) width = elem.col + 1;
 		data[elem.row].set(elem.col, elem.value);
 	}
 }
 
 void sparse_matrix::createMatrixByCols(vector<sparse_matrix_elem> elements)
 {
-	for(auto it = elements.begin(); it != elements.end(); it++)
+	for (auto it = elements.begin(); it != elements.end(); it++)
 	{
 		auto elem = *it;
-		if(width < elem.col+1) resize(elem.col+1, height);
-		if(height < elem.row+1) height = elem.row+1;
+		if (width < elem.col + 1) resize(elem.col + 1, height);
+		if (height < elem.row + 1) height = elem.row + 1;
 		data[elem.col].set(elem.row, elem.value);
 	}
 }
@@ -77,7 +77,7 @@ vector<sparse_matrix_elem> readElements(const char *name)
 	{
 		istringstream iss(line);
 		int col, row;
-        double val;
+		double val;
 		if (!(iss >> col >> row >> val))
 		{
 			throw std::runtime_error(string("Error while reading file: ") + name);
@@ -95,7 +95,7 @@ sparse_matrix sparse_matrix::fromFile(const char *name, direction d)
 void sparse_matrix::printSparse()
 {
 	printf("\ncol\trow\tvalue\n");
-	for(auto it = raw_data.begin(); it != raw_data.end(); it++)
+	for (auto it = raw_data.begin(); it != raw_data.end(); it++)
 	{
 		printf("%d\t%d\t%f\n", it->col, it->row, it->value);
 	}
@@ -108,16 +108,16 @@ vector<sparse_matrix> sparse_matrix::splitToN(int N) const
 	vector<sparse_matrix> result;
 	vector<sparse_matrix_elem> elements;
 
-	double step = (double)size/N;
+	double step = (double) size / N;
 	double edge = step;
 
-	int new_width=0, new_height=0;
+	int new_width = 0, new_height = 0;
 
-	for(int i = 1; i <= size; i++)
+	for (int i = 1; i <= size; i++)
 	{
-		if(i <= edge)
+		if (i <= edge)
 		{
-			if(dir == column_wise)
+			if (dir == column_wise)
 			{
 				new_width++;
 				new_height = height;
@@ -127,15 +127,15 @@ vector<sparse_matrix> sparse_matrix::splitToN(int N) const
 				new_height++;
 				new_width = width;
 			}
-			auto tmp = data[i-1].getElements(dir, i-1);
+			auto tmp = data[i - 1].getElements(dir, i - 1);
 			elements.insert(elements.end(), tmp.begin(), tmp.end());
 		}
 		else
 		{
-		  result.push_back(sparse_matrix(elements, new_width, new_height, dir));
-		  elements.clear();
-		  edge += step;
-		  i--;
+			result.push_back(sparse_matrix(elements, new_width, new_height, dir));
+			elements.clear();
+			edge += step;
+			i--;
 		}
 	}
 
@@ -143,24 +143,24 @@ vector<sparse_matrix> sparse_matrix::splitToN(int N) const
 	return result;
 }
 
-void addToMap(map<pair<int,int>,double>* value_map, const vector<sparse_matrix_elem>& v)
+void addToMap(map<pair<int, int>, double> *value_map, const vector<sparse_matrix_elem> &v)
 {
 	for (auto it = v.cbegin(); it != v.cend(); it++)
 	{
 		auto key = make_pair(it->col, it->row);
-		if(value_map->count(key)>0)
-			(*value_map)[key]+=it->value;
-		else value_map->insert(pair<pair<int,int>,double>(key, it->value));
+		if (value_map->count(key) > 0)
+			(*value_map)[key] += it->value;
+		else value_map->insert(pair<pair<int, int>, double>(key, it->value));
 	}
 }
 
 sparse_matrix sparse_matrix::operator+(const sparse_matrix &m)
 {
 	vector<sparse_matrix_elem> elements;
-	map<pair<int,int>,double> value_map;
+	map<pair<int, int>, double> value_map;
 	addToMap(&value_map, raw_data);
 	addToMap(&value_map, m.raw_data);
-	for(map<pair<int,int>,double>::iterator it = value_map.begin(); it != value_map.end(); it++)
+	for (map<pair<int, int>, double>::iterator it = value_map.begin(); it != value_map.end(); it++)
 	{
 		elements.push_back(sparse_matrix_elem{get<0>(it->first), get<1>(it->first), it->second});
 	}
@@ -171,11 +171,87 @@ sparse_matrix sparse_matrix::operator*(const sparse_matrix &m)
 {
 	sparse_matrix result(m.width, height, dir);
 
-	for(int i = 0; i < width; i++)
+	for (int i = 0; i < width; i++)
 	{
 		sparse_matrix tmp = sparse_matrix(data[i] * m.data[i], m.width, height, dir);
 		result = result + tmp;
 	}
 
 	return result;
+}
+
+sparse_matrix::sparse_matrix(vector<sparse_matrix_elem> elements, int width, int height, direction d)
+		: raw_data(elements), dir(d), width(width), height(height)
+{
+	init();
+	if (dir == column_wise) createMatrixByCols(elements);
+	else if (dir == row_wise) createMatrixByRows(elements);
+}
+
+sparse_matrix::sparse_matrix(const sparse_matrix &m)
+{
+	dir = m.dir;
+	data = m.data;
+	raw_data = m.raw_data;
+	width = m.width;
+	height = m.height;
+}
+
+const vector<sparse_matrix_elem> &sparse_matrix::getRawData() const
+{ return raw_data; }
+
+int sparse_matrix::numberOfElements()
+{ return raw_data.size(); }
+
+int sparse_matrix::getWidth() const
+{ return width; }
+
+int sparse_matrix::getHeight() const
+{ return height; }
+
+sparse_vector &sparse_matrix::operator[](size_t el)
+{ return data[el]; }
+
+const sparse_vector &sparse_matrix::operator[](size_t el) const
+{ return data[el]; }
+
+sparse_matrix::sparse_matrix(int width, int height, direction d) : dir(d), width(width), height(height)
+{ init(); }
+
+sparse_matrix::sparse_matrix(int width, int height) : width(width), height(height)
+{ }
+
+sparse_matrix::sparse_matrix() : width(0), height(0)
+{ }
+
+sparse_matrix::~sparse_matrix()
+{ }
+
+sparse_matrix sparse_matrix::getL()
+{
+	sparse_matrix result(width, height, dir);
+	for(int i=0; i<width; i++)
+		for(int j=i; j<height; j++)
+		{
+			if (i==j) result[i][i] = 1.0;
+			else result[i][j] = *this[i][j];
+		}
+	result.clean();
+	return result;
+}
+
+sparse_matrix sparse_matrix::getU()
+{
+	sparse_matrix result(width, height, dir);
+	for(int i=0; i<width; i++)
+		for(int j=0; j<=i; j++)
+			result[i][j] = *this[i][j];
+	result.clean();
+	return result;
+}
+
+void sparse_matrix::clean()
+{
+	for(int i=0; i<width; i++)
+		data[i].clean();
 }
