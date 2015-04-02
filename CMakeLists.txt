@@ -17,7 +17,7 @@ set(SOURCE_FILES
     src/dense_matrix.h
     src/generator.cpp
     src/generator.h
-    src/tests/tests.cpp
+    src/main.cpp
     src/mpimatrix.cpp
     src/mpimatrix.h
     src/sparse_vector.cpp

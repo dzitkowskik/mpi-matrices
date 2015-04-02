@@ -37,7 +37,7 @@ void sparse_vector::set(int index, double value)
 void sparse_vector::reset(int len)
 {
 	length = len;
-	data.clear();
+	//data.clear();
 }
 
 void sparse_vector::reset(int len, direction d)

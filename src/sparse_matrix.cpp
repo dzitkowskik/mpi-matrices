@@ -12,20 +12,22 @@ using namespace std;
 
 void sparse_matrix::init()
 {
-	int size = dir == column_wise ? width : height;
+	int w_size = dir == column_wise ? width : height;
+	int h_size = dir == column_wise ? height : width;
 	data.clear();
-	data.resize(size);
-	for (int i = 0; i < size; i++) data[i].reset(0, dir);
+	data.resize(w_size);
+	for (int i = 0; i < w_size; i++) data[i].reset(h_size, dir);
 }
 
 void sparse_matrix::resize(int w, int h)
 {
 	width = w;
 	height = h;
-	int size = dir == column_wise ? width : height;
-	data.resize(size);
-	for (int i = 0; i < size; i++)
-		data[i].setDir(dir);
+	int w_size = dir == column_wise ? width : height;
+	int h_size = dir == column_wise ? height : width;
+	data.resize(w_size);
+	for (int i = 0; i < w_size; i++)
+		data[i].reset(h_size, dir);
 }
 
 void sparse_matrix::transpose()
@@ -51,7 +53,7 @@ void sparse_matrix::createMatrixByRows(vector<sparse_matrix_elem> elements)
 	{
 		auto elem = *it;
 		if (height < elem.row + 1) resize(width, elem.row + 1);
-		if (width < elem.col + 1) width = elem.col + 1;
+		if (width < elem.col + 1) resize(elem.col + 1, height);
 		data[elem.row].set(elem.col, elem.value);
 	}
 }
@@ -62,7 +64,7 @@ void sparse_matrix::createMatrixByCols(vector<sparse_matrix_elem> elements)
 	{
 		auto elem = *it;
 		if (width < elem.col + 1) resize(elem.col + 1, height);
-		if (height < elem.row + 1) height = elem.row + 1;
+		if (height < elem.row + 1) resize(width, elem.row + 1);
 		data[elem.col].set(elem.row, elem.value);
 	}
 }
@@ -234,7 +236,7 @@ sparse_matrix sparse_matrix::getL()
 		for(int j=i; j<height; j++)
 		{
 			if (i==j) result[i][i] = 1.0;
-			else result[i][j] = *this[i][j];
+			else result[i][j] = (*this)[i][j];
 		}
 	result.clean();
 	return result;
@@ -245,7 +247,7 @@ sparse_matrix sparse_matrix::getU()
 	sparse_matrix result(width, height, dir);
 	for(int i=0; i<width; i++)
 		for(int j=0; j<=i; j++)
-			result[i][j] = *this[i][j];
+			result[i][j] = (*this)[i][j];
 	result.clean();
 	return result;
 }

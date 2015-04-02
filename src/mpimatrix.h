@@ -7,7 +7,7 @@
 
 class MpiMatrix
 {
-private:
+public:
 	int rank;
 	int processors_cnt;
 	sparse_matrix matrix;
