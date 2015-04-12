@@ -20,7 +20,6 @@ class sparse_matrix
 {
 // FIELDS
 private:
-	vector<sparse_matrix_elem> raw_data;
 	vector<sparse_vector> data;
 	direction dir;
 	int width;
@@ -53,8 +52,7 @@ public:
 	void createMatrixByCols(vector<sparse_matrix_elem> elements);
 	vector<sparse_matrix> splitToN(int N) const;
 	static sparse_matrix fromFile(const char *name, direction d);
-	const vector<sparse_matrix_elem> & getRawData() const;
-	int numberOfElements();
+	vector<sparse_matrix_elem> getRawData() const;
 	int getWidth() const;
 	int getHeight() const;
 	sparse_matrix getL();

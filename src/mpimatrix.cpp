@@ -41,12 +41,13 @@ void MpiMatrix::print()
 
 void MpiMatrix::sendMatrix(int node, sparse_matrix matrix)
 {
-	int size = matrix.numberOfElements();
+	auto raw_data = matrix.getRawData();
+	int size = raw_data.size();
 	int width = matrix.getWidth();
 	int height = matrix.getHeight();
 
 	MPI_Send(&size, 1, MPI_INT, node, 0, MPI_COMM_WORLD);
-	MPI_Send(&matrix.getRawData().front(), size, sparse_elem_type, node, 0, MPI_COMM_WORLD);
+	MPI_Send(&raw_data.front(), size, sparse_elem_type, node, 0, MPI_COMM_WORLD);
 
 	MPI_Send(&width, 1, MPI_INT, node, 0, MPI_COMM_WORLD);
 	MPI_Send(&height, 1, MPI_INT, node, 0, MPI_COMM_WORLD);
@@ -212,7 +213,8 @@ void MpiMatrix::LU(MpiMatrix &L, MpiMatrix &U) const
 			// Do sequential LU
 			for (int k = 0; k < width; k++)
 			{
-				local[k] /= local[k][k];
+				for (int i = k + 1; i < height; i++)
+					local[k][i] /= local[k][k];
 				for (int i = k + 1; i < width; i++)
 					for (int j = k + 1; j < height; j++)
 						local[i][j] = local[i][j] - local[i][k] * local[k][j];

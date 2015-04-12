@@ -63,10 +63,10 @@ void sparse_vector::setDir(direction d)
 
 void sparse_vector::clean()
 {
-	for(int i=0; i<data.size(); i++)
+	for(auto it = data.begin(); it != data.end();)
 	{
-		if(data.count(i) > 0 && data[i] == 0)
-			data.erase(i);
+		if (it->second == 0) data.erase(it++);
+		else ++it;
 	}
 }
 

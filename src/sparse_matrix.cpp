@@ -10,6 +10,34 @@
 
 using namespace std;
 
+sparse_matrix::sparse_matrix(vector<sparse_matrix_elem> elements, int width, int height, direction d)
+		: dir(d), width(width), height(height)
+{
+	init();
+	if (dir == column_wise) createMatrixByCols(elements);
+	else if (dir == row_wise) createMatrixByRows(elements);
+}
+
+sparse_matrix::sparse_matrix(const sparse_matrix &m)
+{
+	dir = m.dir;
+	data = m.data;
+	width = m.width;
+	height = m.height;
+}
+
+sparse_matrix::sparse_matrix(int width, int height, direction d) : dir(d), width(width), height(height)
+{ init(); }
+
+sparse_matrix::sparse_matrix(int width, int height) : width(width), height(height)
+{ }
+
+sparse_matrix::sparse_matrix() : width(0), height(0)
+{ }
+
+sparse_matrix::~sparse_matrix()
+{ }
+
 void sparse_matrix::init()
 {
 	int w_size = dir == column_wise ? width : height;
@@ -32,6 +60,7 @@ void sparse_matrix::resize(int w, int h)
 
 void sparse_matrix::transpose()
 {
+	auto raw_data = getRawData();
 	std::swap(width, height);
 	if (dir == column_wise)
 	{
@@ -96,8 +125,9 @@ sparse_matrix sparse_matrix::fromFile(const char *name, direction d)
 
 void sparse_matrix::printSparse()
 {
+	auto raw_data = getRawData();
 	printf("\ncol\trow\tvalue\n");
-	for (auto it = raw_data.begin(); it != raw_data.end(); it++)
+	for (auto it = raw_data.cbegin(); it != raw_data.cend(); it++)
 	{
 		printf("%d\t%d\t%f\n", it->col, it->row, it->value);
 	}
@@ -160,8 +190,8 @@ sparse_matrix sparse_matrix::operator+(const sparse_matrix &m)
 {
 	vector<sparse_matrix_elem> elements;
 	map<pair<int, int>, double> value_map;
-	addToMap(&value_map, raw_data);
-	addToMap(&value_map, m.raw_data);
+	addToMap(&value_map, getRawData());
+	addToMap(&value_map, m.getRawData());
 	for (map<pair<int, int>, double>::iterator it = value_map.begin(); it != value_map.end(); it++)
 	{
 		elements.push_back(sparse_matrix_elem{get<0>(it->first), get<1>(it->first), it->second});
@@ -182,28 +212,16 @@ sparse_matrix sparse_matrix::operator*(const sparse_matrix &m)
 	return result;
 }
 
-sparse_matrix::sparse_matrix(vector<sparse_matrix_elem> elements, int width, int height, direction d)
-		: raw_data(elements), dir(d), width(width), height(height)
+vector<sparse_matrix_elem> sparse_matrix::getRawData() const
 {
-	init();
-	if (dir == column_wise) createMatrixByCols(elements);
-	else if (dir == row_wise) createMatrixByRows(elements);
+	std::vector<sparse_matrix_elem> elements;
+	for(int i=0; i<data.size(); i++)
+	{
+		auto tmp = data[i].getElements(dir, i);
+		elements.insert(elements.begin(), tmp.begin(), tmp.end());
+	}
+	return elements;
 }
-
-sparse_matrix::sparse_matrix(const sparse_matrix &m)
-{
-	dir = m.dir;
-	data = m.data;
-	raw_data = m.raw_data;
-	width = m.width;
-	height = m.height;
-}
-
-const vector<sparse_matrix_elem> &sparse_matrix::getRawData() const
-{ return raw_data; }
-
-int sparse_matrix::numberOfElements()
-{ return raw_data.size(); }
 
 int sparse_matrix::getWidth() const
 { return width; }
@@ -216,18 +234,6 @@ sparse_vector &sparse_matrix::operator[](size_t el)
 
 const sparse_vector &sparse_matrix::operator[](size_t el) const
 { return data[el]; }
-
-sparse_matrix::sparse_matrix(int width, int height, direction d) : dir(d), width(width), height(height)
-{ init(); }
-
-sparse_matrix::sparse_matrix(int width, int height) : width(width), height(height)
-{ }
-
-sparse_matrix::sparse_matrix() : width(0), height(0)
-{ }
-
-sparse_matrix::~sparse_matrix()
-{ }
 
 sparse_matrix sparse_matrix::getL()
 {
