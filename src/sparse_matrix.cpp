@@ -189,12 +189,19 @@ void addToMap(map<pair<int, int>, double> *value_map, const vector<sparse_matrix
 sparse_matrix sparse_matrix::operator+(const sparse_matrix &m)
 {
 	vector<sparse_matrix_elem> elements;
-	map<pair<int, int>, double> value_map;
-	addToMap(&value_map, getRawData());
-	addToMap(&value_map, m.getRawData());
-	for (map<pair<int, int>, double>::iterator it = value_map.begin(); it != value_map.end(); it++)
+	try
 	{
-		elements.push_back(sparse_matrix_elem{get<0>(it->first), get<1>(it->first), it->second});
+		map<pair<int, int>, double> value_map;
+		addToMap(&value_map, getRawData());
+		addToMap(&value_map, m.getRawData());
+		for (map<pair<int, int>, double>::iterator it = value_map.begin(); it != value_map.end(); it++)
+		{
+			elements.push_back(sparse_matrix_elem{get<0>(it->first), get<1>(it->first), it->second});
+		}
+	}
+	catch(exception e)
+	{
+		printf("sparse_matrix operator+ : %s", e.what());
 	}
 	return sparse_matrix(elements, width, height, dir);
 }
@@ -215,10 +222,18 @@ sparse_matrix sparse_matrix::operator*(const sparse_matrix &m)
 vector<sparse_matrix_elem> sparse_matrix::getRawData() const
 {
 	std::vector<sparse_matrix_elem> elements;
-	for(int i=0; i<data.size(); i++)
+	try
 	{
-		auto tmp = data[i].getElements(dir, i);
-		elements.insert(elements.begin(), tmp.begin(), tmp.end());
+		for(int i=0; i<data.size(); i++)
+		{
+			auto tmp = data[i].getElements(dir, i);
+			if (tmp.size() > 0)
+				elements.insert(elements.end(), tmp.begin(), tmp.end());
+		}
+	}
+	catch(exception e)
+	{
+		printf("getRawData: %s", e.what());
 	}
 	return elements;
 }

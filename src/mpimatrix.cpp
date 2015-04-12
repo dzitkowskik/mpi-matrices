@@ -103,11 +103,11 @@ MpiMatrix MpiMatrix::operator+(const MpiMatrix &m)
 
 			for (int i = 1; i < processors_cnt; i++)
 			{
-				sparse_matrix part_result = receiveMatrix(i, column_wise);
+				auto part_result = receiveMatrix(i, column_wise).getRawData();
 				elements.insert(
 						elements.begin(),
-						part_result.getRawData().begin(),
-						part_result.getRawData().end());
+						part_result.begin(),
+						part_result.end());
 			}
 
 			result = sparse_matrix(elements, matrix.getWidth(), matrix.getHeight(), column_wise);
