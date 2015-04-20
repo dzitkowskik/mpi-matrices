@@ -11,7 +11,7 @@
 
 #define TEST_ADD 1
 #define TEST_MUL 1
-#define TEST_LU 0
+#define TEST_LU 1
 
 bool test_multiplication(int rank, int size, double &mpi_duration, double &normal_duration)
 {
