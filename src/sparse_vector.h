@@ -48,6 +48,9 @@ public:
 	sparse_vector &operator*=(const double &v);
 	sparse_vector &operator/=(const double &v);
 
+	bool operator==(const sparse_vector &v);
+	bool operator!=(const sparse_vector &v);
+
 // GETTERS AND SETTERS
 public:
 	double get(int nIndex) const;
@@ -75,6 +78,7 @@ public:
 	int size() const;
 	void clean();
 	void clear();
+	void print() const;
 
 	// OTHER
 	std::vector<sparse_matrix_elem> getElements(direction d, int x = 0) const;

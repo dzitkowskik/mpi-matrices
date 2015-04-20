@@ -296,14 +296,19 @@ void MpiMatrix::LU(MpiMatrix &L, MpiMatrix &U)
 		// Receive matrix and position
 		int pos = 0, n = 0;
 		local = receiveMatrix(0, column_wise);
-		width = local.getWidth();
 		height = local.getHeight();
 		MPI_Recv(&pos, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 		MPI_Recv(&n, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
 		int min = pos;
-		int max = pos+width-1;
-		sparse_vector row;
+		int len = n / (processors_cnt - 1);
+		int max = rank == processors_cnt - 1 ? n-1 : len-1;
+
+//		printf("I am proc nr %d and got n = %d and pos = %d\n", rank, n, pos);
+//		printf("have min = %d, max = %d and matrix:\n", min, max);
+//		local.printSparse();
+//		printf("Width = %d, height = %d\n", width, height);
+//		printf("\n");
 
 		// Compute
 		for (int k = 0; k < n; k++)
@@ -314,12 +319,14 @@ void MpiMatrix::LU(MpiMatrix &L, MpiMatrix &U)
 				{
 					for (int i = k + 1; i < height; i++)
 						local[k][i] /= local[k][k];
-					for (int i = rank; i < processors_cnt; i++)
+					for (int i = rank + 1; i < processors_cnt; i++)
 						sendVector(i, local[k]);
 				}
-				row = receiveVector(MPI_ANY_SOURCE);
-				// TODO: Last processor stores result
+				else local[k] = receiveVector(MPI_ANY_SOURCE);
 			}
+			for(int i=(((k+1) > min) ? (k+1) : min); i <= max; i++)
+				for(int j=k+1; j<n; j++)
+						local[i][j] = local[i][j] - local[i][k] * local[k][j];
 		}
 
 		// Last processor sends result
@@ -332,4 +339,16 @@ void MpiMatrix::LU(MpiMatrix &L, MpiMatrix &U)
 		L = MpiMatrix(rank, processors_cnt, local.getL());
 		U = MpiMatrix(rank, processors_cnt, local.getU());
 	}
+}
+
+MpiMatrix MpiMatrix::load(const char *path, int rank, int proc_cnt)
+{
+	MpiMatrix result(rank, proc_cnt);
+	result.loadFromFile(path, column_wise);
+	return result;
+}
+
+bool MpiMatrix::operator==(MpiMatrix const &m)
+{
+	return matrix == m.matrix;
 }

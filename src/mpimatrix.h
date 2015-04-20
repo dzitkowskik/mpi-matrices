@@ -23,8 +23,10 @@ public:
 public:
 	void print();
 	void loadFromFile(const char *path, direction dir);
+	static MpiMatrix load(const char* path, int rank, int proc_cnt);
 	MpiMatrix operator+(const MpiMatrix &m);
 	MpiMatrix operator*(const MpiMatrix &m);
+	bool operator==(const MpiMatrix &m);
 	void LU(MpiMatrix &L, MpiMatrix &U);
 
 private:

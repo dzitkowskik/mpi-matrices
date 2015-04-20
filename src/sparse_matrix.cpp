@@ -126,7 +126,7 @@ sparse_matrix sparse_matrix::fromFile(const char *name, direction d)
 void sparse_matrix::printSparse()
 {
 	auto raw_data = getRawData();
-	printf("\ncol\trow\tvalue\n");
+	printf("col\trow\tvalue\n");
 	for (auto it = raw_data.cbegin(); it != raw_data.cend(); it++)
 	{
 		printf("%d\t%d\t%f\n", it->col, it->row, it->value);
@@ -140,14 +140,13 @@ vector<sparse_matrix> sparse_matrix::splitToN(int N) const
 	vector<sparse_matrix> result;
 	vector<sparse_matrix_elem> elements;
 
-	double step = (double) size / N;
-	double edge = step;
+	int len = size / N;
 
 	int new_width = 0, new_height = 0;
 
-	for (int i = 1; i <= size; i++)
+	for (int i = 1, j = 0, n = 1; i <= size; i++)
 	{
-		if (i <= edge)
+		if (j < len || n == N)
 		{
 			if (dir == column_wise)
 			{
@@ -161,12 +160,16 @@ vector<sparse_matrix> sparse_matrix::splitToN(int N) const
 			}
 			auto tmp = data[i - 1].getElements(dir, i - 1);
 			elements.insert(elements.end(), tmp.begin(), tmp.end());
+			j++;
 		}
 		else
 		{
 			result.push_back(sparse_matrix(elements, new_width, new_height, dir));
+			new_width = 0;
+			new_height = 0;
 			elements.clear();
-			edge += step;
+			j=0;
+			n++;
 			i--;
 		}
 	}
@@ -282,4 +285,19 @@ void sparse_matrix::clean()
 direction sparse_matrix::getDir() const
 {
 	return dir;
+}
+
+bool sparse_matrix::operator==(const sparse_matrix &m)
+{
+	try {
+		for (int i = 0; i < data.size(); i++)
+			if (data[i] != m[i]) return false;
+		return true;
+	} catch(...) {
+		return false;
+	}
+}
+
+bool sparse_matrix::operator!=(const sparse_matrix &m) {
+	return !(*this == m);
 }

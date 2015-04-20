@@ -29,18 +29,19 @@ endif
 
 WARNINGS_ERRORS := #-pedantic -Wall -Wextra -Wno-deprecated -Wno-unused-parameter  -Wno-enum-compare -Weffc++
 
-debug: COMPILER += -DDEBUG -g
+debug: export COMPILER_FLAGS := -DDEBUG -g
 debug: export EXCLUDED_MAIN_FILE := tests.cpp
 debug: export EXCLUDED_DIRECTORY := */tests/*
 debug: export BUILD_PATH := build/debug
 debug: export BIN_PATH := bin/debug
 
-release: COMPILER += -O3
+release: export COMPILER_FLAGS := -O3
 release: export EXCLUDED_MAIN_FILE := tests.cpp
 release: export EXCLUDED_DIRECTORY := */tests/*
 release: export BUILD_PATH := build/release
 release: export BIN_PATH := bin/release
 
+test: export COMPILER_FLAGS := -DDEBUG -g
 test: export EXCLUDED_MAIN_FILE := main.cpp
 test: export EXCLUDED_DIRECTORY :=
 test: export BUILD_PATH := build/test
@@ -115,7 +116,7 @@ runlocal:
 $(BIN_PATH)/$(PROGRAM_NAME): $(OBJS)
 	@echo 'Linking target: $@'
 	@echo 'Invoking: $(NVCC) Linker'
-	$(COMPILER) $(STANDART) $(L_FLAGS) -o $(BIN_PATH)/$(PROGRAM_NAME) $(OBJS)
+	$(COMPILER) $(COMPILER_FLAGS) $(STANDART) $(L_FLAGS) -o $(BIN_PATH)/$(PROGRAM_NAME) $(OBJS)
 	chmod +x $(BIN_PATH)/$(PROGRAM_NAME)
 	@echo 'Finished building target: $@'
 	@echo ' '
@@ -124,7 +125,7 @@ $(BUILD_PATH)/%.o: $(SRC_PATH)/%.$(SRC_EXT)
 	@$(START_TIME)
 	@echo 'Building file: $< -> $@'
 	@echo 'Invoking: $(COMPILER) Compiler'
-	$(COMPILER) $(STANDART) $(DEFINES) $(WARNINGS_ERRORS) $(FLAGS) -c -MMD -MP -o "$@" "$<"
+	$(COMPILER) $(COMPILER_FLAGS) $(STANDART) $(DEFINES) $(WARNINGS_ERRORS) $(FLAGS) -c -MMD -MP -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo '\t Compile time: '
 	@$(END_TIME)

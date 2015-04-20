@@ -4,6 +4,8 @@
 #include <vector>
 #include "sparse_matrix.h"
 #include "mpimatrix.h"
+#include "generator.h"
+#include "dense_matrix.h"
 
 using namespace std;
 
@@ -23,6 +25,14 @@ int main (int argc, char *argv[])
     MPI_Comm_size(MPI_COMM_WORLD,&size);
 
     if (rank == 0) printHelp();
+
+    auto randM = Generator(rank, size).GenerateRandomMatrix(5, 5, 12, column_wise);
+    printf("Random sparse matrix: \n");
+    randM.print();
+    auto densM = dense_matrix(randM.matrix);
+    printf("dense matrix: \n");
+    densM.printDense();
+
 
     MpiMatrix m1(rank, size);
     MpiMatrix m2(rank, size);

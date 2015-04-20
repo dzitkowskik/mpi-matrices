@@ -4,12 +4,16 @@
 #include "../generator.h"
 #include "../dense_matrix.h"
 #include <ctime>
+#include <unistd.h>
 
 #define RANDOM_TESTS_COUNT 5
-#define MATRIX_SIZE 500
+#define MATRIX_SIZE 250
 
+#define TEST_ADD 1
+#define TEST_MUL 1
+#define TEST_LU 0
 
-int test_multiplication(int rank, int size, double &mpi_duration, double &normal_duration)
+bool test_multiplication(int rank, int size, double &mpi_duration, double &normal_duration)
 {
     std::clock_t start;
     bool test_result = false;
@@ -120,6 +124,40 @@ bool test_addition(int rank, int size, double &mpi_duration, double &normal_dura
     return true;
 }
 
+bool test_lu(int rank, int size)
+{
+    int result = 0;
+
+    Generator gen(rank, size);
+    MpiMatrix test_matrix_1 = MpiMatrix::load("/tmp/m1", rank, size);
+    MpiMatrix test_matrix_2 = MpiMatrix::load("/tmp/m2", rank, size);
+    MpiMatrix test_matrix_3 = MpiMatrix::load("/tmp/m3", rank, size);
+    // Expected L
+    MpiMatrix test_matrix_1_L = MpiMatrix::load("/tmp/m1L", rank, size);
+    MpiMatrix test_matrix_2_L = MpiMatrix::load("/tmp/m2L", rank, size);
+    MpiMatrix test_matrix_3_L = MpiMatrix::load("/tmp/m3L", rank, size);
+    // Expected U
+    MpiMatrix test_matrix_1_U = MpiMatrix::load("/tmp/m1U", rank, size);
+    MpiMatrix test_matrix_2_U = MpiMatrix::load("/tmp/m2U", rank, size);
+    MpiMatrix test_matrix_3_U = MpiMatrix::load("/tmp/m3U", rank, size);
+
+    MpiMatrix L, U;
+
+    test_matrix_1.LU(L, U);
+    result += L == test_matrix_1_L ? 1 : 0;
+    result += U == test_matrix_1_U ? 1 : 0;
+
+    test_matrix_1.LU(L, U);
+    result += L == test_matrix_2_L ? 1 : 0;
+    result += U == test_matrix_2_U ? 1 : 0;
+
+    test_matrix_1.LU(L, U);
+    result += L == test_matrix_3_L ? 1 : 0;
+    result += U == test_matrix_3_U ? 1 : 0;
+
+    return result == 6;
+}
+
 int main(int argc, char** argv)
 {
     int rank, size;
@@ -133,6 +171,7 @@ int main(int argc, char** argv)
     if(rank == 0)
       srand(time(NULL));
 
+    if(TEST_MUL)
     if(test_multiplication(rank, size, mpi_duration, normal_duration))
     {
       if(rank == 0)
@@ -144,6 +183,7 @@ int main(int argc, char** argv)
         printf("test_multiplication [FAIL]\n");
     }
 
+    if(TEST_ADD)
     if(test_addition(rank, size, mpi_duration, normal_duration))
     {
         if(rank == 0)
@@ -154,6 +194,9 @@ int main(int argc, char** argv)
         if(rank == 0)
             printf("test_addition [FAIL]\n");
     }
+
+    if(TEST_LU)
+        test_lu(rank, size);
 
     MPI_Finalize();
     return 0;

@@ -22,7 +22,7 @@ sparse_vector::sparse_vector(int len, direction dir, std::vector<sparse_matrix_e
 		: length(len), dir(dir)
 {
 	for (auto it = elements.begin(); it != elements.end(); it++)
-		set(dir == column_wise ? it->col : it->row, it->value);
+		set(dir == column_wise ? it->row : it->col, it->value);
 }
 
 sparse_vector::~sparse_vector()
@@ -176,4 +176,29 @@ std::vector<sparse_matrix_elem> sparse_vector::getElements(direction d, int x) c
 		for (auto it = data.cbegin(); it != data.cend(); it++)
 			result.push_back(sparse_matrix_elem{it->first, x, it->second});
 	return result;
+}
+
+void sparse_vector::print() const
+{
+	for (auto it = data.cbegin(); it != data.cend(); it++)
+		printf("(%d)=>%f", it->first, it->second);
+}
+
+bool sparse_vector::operator==(const sparse_vector &v)
+{
+	try
+	{
+		for (int i = 0; i < length; i++)
+			if (data[i] != v[i]) return false;
+		return true;
+	}
+	catch(...)
+	{
+		return false;
+	}
+}
+
+bool sparse_vector::operator!=(const sparse_vector &v)
+{
+	return !(*this == v);
 }
