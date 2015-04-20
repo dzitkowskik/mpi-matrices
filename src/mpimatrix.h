@@ -25,13 +25,16 @@ public:
 	void loadFromFile(const char *path, direction dir);
 	MpiMatrix operator+(const MpiMatrix &m);
 	MpiMatrix operator*(const MpiMatrix &m);
-	void LU(MpiMatrix &L, MpiMatrix &U) const;
+	void LU(MpiMatrix &L, MpiMatrix &U);
 
 private:
 	void init();
 	void createSparseElemDatatype();
 	void sendMatrix(int node, sparse_matrix matrix);
 	sparse_matrix receiveMatrix(int node, direction dir);
+
+	void sendVector(int node, sparse_vector vector);
+	sparse_vector receiveVector(int node);
 };
 
 #endif

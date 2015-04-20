@@ -4,12 +4,38 @@
 
 #include "sparse_vector.h"
 
+// CONSTRUCTORS
+
+sparse_vector::sparse_vector() : length(0)
+{ }
+
+sparse_vector::sparse_vector(int len) : length(len)
+{ }
+
+sparse_vector::sparse_vector(direction dir) : length(0), dir(dir)
+{ }
+
+sparse_vector::sparse_vector(int len, direction dir) : length(len), dir(dir)
+{ }
+
+sparse_vector::sparse_vector(int len, direction dir, std::vector<sparse_matrix_elem> elements)
+		: length(len), dir(dir)
+{
+	for (auto it = elements.begin(); it != elements.end(); it++)
+		set(dir == column_wise ? it->col : it->row, it->value);
+}
+
+sparse_vector::~sparse_vector()
+{ }
+
 sparse_vector::sparse_vector(const sparse_vector &other)
 {
 	data = other.data;
 	length = other.length;
 	dir = other.dir;
 }
+
+// GETTERS AND SETTERS
 
 double sparse_vector::get(int nIndex) const
 {
@@ -63,7 +89,7 @@ void sparse_vector::setDir(direction d)
 
 void sparse_vector::clean()
 {
-	for(auto it = data.begin(); it != data.end();)
+	for (auto it = data.begin(); it != data.end();)
 	{
 		if (it->second == 0) data.erase(it++);
 		else ++it;
@@ -151,4 +177,3 @@ std::vector<sparse_matrix_elem> sparse_vector::getElements(direction d, int x) c
 			result.push_back(sparse_matrix_elem{it->first, x, it->second});
 	return result;
 }
-

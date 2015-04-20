@@ -55,6 +55,7 @@ public:
 	vector<sparse_matrix_elem> getRawData() const;
 	int getWidth() const;
 	int getHeight() const;
+	direction getDir() const;
 	sparse_matrix getL();
 	sparse_matrix getU();
 };

@@ -278,3 +278,8 @@ void sparse_matrix::clean()
 	for(int i=0; i<width; i++)
 		data[i].clean();
 }
+
+direction sparse_matrix::getDir() const
+{
+	return dir;
+}

@@ -20,17 +20,13 @@ private:
 
 // CONSTRUCTORS
 public:
-	sparse_vector() : length(0)
-	{ }
-	sparse_vector(int len) : length(len)
-	{ }
-	sparse_vector(direction dir) : length(0), dir(dir)
-	{ }
-	sparse_vector(int len, direction dir) : length(len), dir(dir)
-	{ }
+	sparse_vector();
+	sparse_vector(int len);
+	sparse_vector(direction dir);
+	sparse_vector(int len, direction dir);
+	sparse_vector(int len, direction dir, std::vector<sparse_matrix_elem> elements);
 	sparse_vector(const sparse_vector &other);
-	~sparse_vector()
-	{ }
+	~sparse_vector();
 
 // OPERATORS
 public:
