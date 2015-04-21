@@ -189,7 +189,7 @@ bool sparse_vector::operator==(const sparse_vector &v)
 	try
 	{
 		for (int i = 0; i < length; i++)
-			if (data[i] != v[i]) return false;
+			if (abs(data[i] - v[i]) > 0.01) return false;
 		return true;
 	}
 	catch(...)

@@ -98,7 +98,7 @@ void sparse_matrix::createMatrixByCols(vector<sparse_matrix_elem> elements)
 	}
 }
 
-vector<sparse_matrix_elem> readElements(const char *name)
+vector<sparse_matrix_elem> readSparseElements(const char *name)
 {
 	vector<sparse_matrix_elem> elements;
 	string line;
@@ -118,9 +118,39 @@ vector<sparse_matrix_elem> readElements(const char *name)
 	return elements;
 }
 
-sparse_matrix sparse_matrix::fromFile(const char *name, direction d)
+vector<sparse_matrix_elem> readDenseElements(const char *name, int &w, int &h)
 {
-	return sparse_matrix(readElements(name), 0, 0, d);
+	vector<sparse_matrix_elem> elements;
+	string line;
+	ifstream file(name);
+	int i = 0, j = 0;
+	while( getline(file, line) )
+	{
+		std::stringstream stream(line);
+		double value;
+		while(stream)
+		{
+			stream >> value;
+			elements.push_back(sparse_matrix_elem{j, i, value});
+			j++;
+		}
+		i++;
+	}
+	w = j;
+	h = i;
+	return elements;
+}
+
+sparse_matrix sparse_matrix::fromSparseFile(const char *name, direction d)
+{
+	return sparse_matrix(readSparseElements(name), 0, 0, d);
+}
+
+sparse_matrix sparse_matrix::fromDenseFile(const char *name, direction d)
+{
+	int width, height;
+	auto elements = readDenseElements(name, width, height);
+	return sparse_matrix(elements, width, height, d);
 }
 
 void sparse_matrix::printSparse()
@@ -212,6 +242,8 @@ sparse_matrix sparse_matrix::operator+(const sparse_matrix &m)
 sparse_matrix sparse_matrix::operator*(const sparse_matrix &m)
 {
 	sparse_matrix result(m.width, height, dir);
+
+	// TODO: FIX THIS - IT IS VERY SLOW!!!
 
 	for (int i = 0; i < width; i++)
 	{

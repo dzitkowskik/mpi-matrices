@@ -129,17 +129,17 @@ bool test_lu(int rank, int size)
     int result = 0;
 
     Generator gen(rank, size);
-    MpiMatrix test_matrix_1 = MpiMatrix::load("/tmp/m1", rank, size);
-    MpiMatrix test_matrix_2 = MpiMatrix::load("/tmp/m2", rank, size);
-    MpiMatrix test_matrix_3 = MpiMatrix::load("/tmp/m3", rank, size);
+    MpiMatrix test_matrix_1 = MpiMatrix::load("/tmp/m1", rank, size, sparse);
+    MpiMatrix test_matrix_2 = MpiMatrix::load("/tmp/m2", rank, size, sparse);
+    MpiMatrix test_matrix_3 = MpiMatrix::load("/tmp/m3", rank, size, sparse);
     // Expected L
-    MpiMatrix test_matrix_1_L = MpiMatrix::load("/tmp/m1L", rank, size);
-    MpiMatrix test_matrix_2_L = MpiMatrix::load("/tmp/m2L", rank, size);
-    MpiMatrix test_matrix_3_L = MpiMatrix::load("/tmp/m3L", rank, size);
+    MpiMatrix test_matrix_1_L = MpiMatrix::load("/tmp/m1L", rank, size, dense);
+    MpiMatrix test_matrix_2_L = MpiMatrix::load("/tmp/m2L", rank, size, dense);
+    MpiMatrix test_matrix_3_L = MpiMatrix::load("/tmp/m3L", rank, size, dense);
     // Expected U
-    MpiMatrix test_matrix_1_U = MpiMatrix::load("/tmp/m1U", rank, size);
-    MpiMatrix test_matrix_2_U = MpiMatrix::load("/tmp/m2U", rank, size);
-    MpiMatrix test_matrix_3_U = MpiMatrix::load("/tmp/m3U", rank, size);
+    MpiMatrix test_matrix_1_U = MpiMatrix::load("/tmp/m1U", rank, size, dense);
+    MpiMatrix test_matrix_2_U = MpiMatrix::load("/tmp/m2U", rank, size, dense);
+    MpiMatrix test_matrix_3_U = MpiMatrix::load("/tmp/m3U", rank, size, dense);
 
     MpiMatrix L, U;
 
@@ -196,7 +196,9 @@ int main(int argc, char** argv)
     }
 
     if(TEST_LU)
-        test_lu(rank, size);
+        if(test_lu(rank, size))
+            printf("test_lu [SUCCESS]\n");
+        else printf("test_lu [FAIL]\n");
 
     MPI_Finalize();
     return 0;

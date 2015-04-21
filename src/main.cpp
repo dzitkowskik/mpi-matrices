@@ -26,7 +26,7 @@ int main (int argc, char *argv[])
 
     if (rank == 0) printHelp();
 
-    auto randM = Generator(rank, size).GenerateRandomMatrix(5, 5, 12, column_wise);
+    auto randM = Generator(rank, size).GenerateRandomMatrix(10, 10, 25, column_wise);
     printf("Random sparse matrix: \n");
     randM.print();
     auto densM = dense_matrix(randM.matrix);
@@ -34,11 +34,8 @@ int main (int argc, char *argv[])
     densM.printDense();
 
 
-    MpiMatrix m1(rank, size);
-    MpiMatrix m2(rank, size);
-
-    m1.loadFromFile("/tmp/matrix1", column_wise);
-    m2.loadFromFile("/tmp/matrix2", row_wise);
+    MpiMatrix m1 = MpiMatrix::load("/tmp/matrix1", rank, size, sparse);
+    MpiMatrix m2 = MpiMatrix::load("/tmp/matrix2", rank, size, sparse);
 
     MpiMatrix mult_result = m1*m2;
     MpiMatrix add_result = m1+m2;

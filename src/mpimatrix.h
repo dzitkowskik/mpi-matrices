@@ -5,6 +5,8 @@
 #include <mpi.h>
 #include "sparse_matrix.h"
 
+enum MatrixType { sparse, dense };
+
 class MpiMatrix
 {
 public:
@@ -22,8 +24,7 @@ public:
 
 public:
 	void print();
-	void loadFromFile(const char *path, direction dir);
-	static MpiMatrix load(const char* path, int rank, int proc_cnt);
+	static MpiMatrix load(const char* path, int rank, int proc_cnt, MatrixType type);
 	MpiMatrix operator+(const MpiMatrix &m);
 	MpiMatrix operator*(const MpiMatrix &m);
 	bool operator==(const MpiMatrix &m);
@@ -34,7 +35,8 @@ private:
 	void createSparseElemDatatype();
 	void sendMatrix(int node, sparse_matrix matrix);
 	sparse_matrix receiveMatrix(int node, direction dir);
-
+	void loadSparse(const char *path, direction dir);
+	void loadDense(const char *path, direction dir);
 	void sendVector(int node, sparse_vector vector);
 	sparse_vector receiveVector(int node);
 };

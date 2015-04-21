@@ -27,7 +27,7 @@ ifeq ($(V),true)
 	CMD_PREFIX :=
 endif
 
-WARNINGS_ERRORS := #-pedantic -Wall -Wextra -Wno-deprecated -Wno-unused-parameter  -Wno-enum-compare -Weffc++
+WARNINGS_ERRORS := -Wno-literal-suffix # -pedantic -Wall -Wextra -Wno-deprecated -Wno-unused-parameter  -Wno-enum-compare -Weffc++
 
 debug: export COMPILER_FLAGS := -DDEBUG -g
 debug: export EXCLUDED_MAIN_FILE := tests.cpp
