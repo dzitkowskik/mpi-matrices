@@ -129,33 +129,31 @@ bool test_lu(int rank, int size)
     int result = 0;
 
     Generator gen(rank, size);
-    MpiMatrix test_matrix_1 = MpiMatrix::load("/tmp/m1", rank, size, sparse);
-    MpiMatrix test_matrix_2 = MpiMatrix::load("/tmp/m2", rank, size, sparse);
-    MpiMatrix test_matrix_3 = MpiMatrix::load("/tmp/m3", rank, size, sparse);
-    // Expected L
-    MpiMatrix test_matrix_1_L = MpiMatrix::load("/tmp/m1L", rank, size, dense);
-    MpiMatrix test_matrix_2_L = MpiMatrix::load("/tmp/m2L", rank, size, dense);
-    MpiMatrix test_matrix_3_L = MpiMatrix::load("/tmp/m3L", rank, size, dense);
-    // Expected U
-    MpiMatrix test_matrix_1_U = MpiMatrix::load("/tmp/m1U", rank, size, dense);
-    MpiMatrix test_matrix_2_U = MpiMatrix::load("/tmp/m2U", rank, size, dense);
-    MpiMatrix test_matrix_3_U = MpiMatrix::load("/tmp/m3U", rank, size, dense);
+    MpiMatrix test_matrix = MpiMatrix::load("/tmp/mat", rank, size, sparse);
+    MpiMatrix test_matrix_L = MpiMatrix::load("/tmp/matL", rank, size, dense);
+    MpiMatrix test_matrix_U = MpiMatrix::load("/tmp/matU", rank, size, dense);
 
     MpiMatrix L, U;
 
-    test_matrix_1.LU(L, U);
-    result += L == test_matrix_1_L ? 1 : 0;
-    result += U == test_matrix_1_U ? 1 : 0;
+    test_matrix.LU(L, U);
+    result += L == test_matrix_L ? 1 : 0;
+    result += U == test_matrix_U ? 1 : 0;
 
-    test_matrix_1.LU(L, U);
-    result += L == test_matrix_2_L ? 1 : 0;
-    result += U == test_matrix_2_U ? 1 : 0;
+    if(result != 2)
+    {
+        printf("Matrix:\n");
+        test_matrix.print();
+        printf("Expected U:\n");
+        test_matrix_U.print();
+        printf("Expected L:\n");
+        test_matrix_L.print();
+        printf("Actual U:\n");
+        U.print();
+        printf("Actual L:\n");
+        L.print();
+    }
 
-    test_matrix_1.LU(L, U);
-    result += L == test_matrix_3_L ? 1 : 0;
-    result += U == test_matrix_3_U ? 1 : 0;
-
-    return result == 6;
+    return result == 2;
 }
 
 int main(int argc, char** argv)
@@ -196,9 +194,13 @@ int main(int argc, char** argv)
     }
 
     if(TEST_LU)
+    {
         if(test_lu(rank, size))
-            printf("test_lu [SUCCESS]\n");
-        else printf("test_lu [FAIL]\n");
+        {
+            if (rank == 0) printf("test_lu [SUCCESS]\n");
+        }
+        else if (rank == 0)  printf("test_lu [FAIL]\n");
+    }
 
     MPI_Finalize();
     return 0;

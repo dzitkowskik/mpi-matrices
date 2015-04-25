@@ -55,7 +55,7 @@ public:
 	void printSparse();
 	void createMatrixByRows(vector<sparse_matrix_elem> elements);
 	void createMatrixByCols(vector<sparse_matrix_elem> elements);
-	vector<sparse_matrix> splitToN(int N) const;
+	vector<std::pair<sparse_matrix, int>> splitToN(int N) const;
 	static sparse_matrix fromSparseFile(const char *name, direction d);
 	static sparse_matrix fromDenseFile(const char *name, direction d);
 	vector<sparse_matrix_elem> getRawData() const;

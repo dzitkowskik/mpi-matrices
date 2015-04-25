@@ -126,15 +126,15 @@ vector<sparse_matrix_elem> readDenseElements(const char *name, int &w, int &h)
 	int i = 0, j = 0;
 	while( getline(file, line) )
 	{
-		std::stringstream stream(line);
+		std::istringstream stream(line);
 		double value;
-		while(stream)
+		while(stream >> value)
 		{
-			stream >> value;
 			elements.push_back(sparse_matrix_elem{j, i, value});
 			j++;
 		}
 		i++;
+		j = 0;
 	}
 	w = j;
 	h = i;
@@ -161,42 +161,33 @@ void sparse_matrix::printSparse()
 	{
 		printf("%d\t%d\t%f\n", it->col, it->row, it->value);
 	}
+	printf("\n");
 }
 
-vector<sparse_matrix> sparse_matrix::splitToN(int N) const
+vector<pair<sparse_matrix, int>> sparse_matrix::splitToN(int N) const
 {
 	int size = dir == column_wise ? width : height;
 
-	vector<sparse_matrix> result;
+	vector<pair<sparse_matrix, int>> result;
 	vector<sparse_matrix_elem> elements;
 
 	int len = size / N;
-
-	int new_width = 0, new_height = 0;
+	int split_size = 0;
+	int new_width = width, new_height = height;
 
 	for (int i = 1, j = 0, n = 1; i <= size; i++)
 	{
 		if (j < len || n == N)
 		{
-			if (dir == column_wise)
-			{
-				new_width++;
-				new_height = height;
-			}
-			else
-			{
-				new_height++;
-				new_width = width;
-			}
 			auto tmp = data[i - 1].getElements(dir, i - 1);
 			elements.insert(elements.end(), tmp.begin(), tmp.end());
 			j++;
+			split_size++;
 		}
 		else
 		{
-			result.push_back(sparse_matrix(elements, new_width, new_height, dir));
-			new_width = 0;
-			new_height = 0;
+			result.push_back(make_pair(sparse_matrix(elements, new_width, new_height, dir), split_size));
+			split_size = 0;
 			elements.clear();
 			j=0;
 			n++;
@@ -204,7 +195,7 @@ vector<sparse_matrix> sparse_matrix::splitToN(int N) const
 		}
 	}
 
-	result.push_back(sparse_matrix(elements, new_width, new_height, dir));
+	result.push_back(make_pair(sparse_matrix(elements, new_width, new_height, dir), split_size));
 	return result;
 }
 

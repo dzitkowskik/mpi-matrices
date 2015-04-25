@@ -156,13 +156,13 @@ MpiMatrix MpiMatrix::operator+(const MpiMatrix &m)
         if (!done)
         {
             // Do parallel multiplication using MPI
-            vector<sparse_matrix> matrices1 = matrix.splitToN(processors_cnt - 1);
-            vector<sparse_matrix> matrices2 = m.matrix.splitToN(processors_cnt - 1);
+            auto matrices1 = matrix.splitToN(processors_cnt - 1);
+            auto matrices2 = m.matrix.splitToN(processors_cnt - 1);
 
             for (int i = 1; i < processors_cnt; i++)
             {
-                sendMatrix(i, matrices1[i - 1]);
-                sendMatrix(i, matrices2[i - 1]);
+                sendMatrix(i, matrices1[i - 1].first);
+                sendMatrix(i, matrices2[i - 1].first);
             }
 
             vector<sparse_matrix_elem> elements;
@@ -222,13 +222,13 @@ MpiMatrix& MpiMatrix::operator+=(MpiMatrix const &m)
         if (!done)
         {
             // Do parallel multiplication using MPI
-            vector<sparse_matrix> matrices1 = matrix.splitToN(processors_cnt - 1);
-            vector<sparse_matrix> matrices2 = m.matrix.splitToN(processors_cnt - 1);
+            auto matrices1 = matrix.splitToN(processors_cnt - 1);
+            auto matrices2 = m.matrix.splitToN(processors_cnt - 1);
 
             for (int i = 1; i < processors_cnt; i++)
             {
-                sendMatrix(i, matrices1[i - 1]);
-                sendMatrix(i, matrices2[i - 1]);
+                sendMatrix(i, matrices1[i - 1].first);
+                sendMatrix(i, matrices2[i - 1].first);
             }
 
             vector<sparse_matrix_elem> elements;
@@ -279,13 +279,13 @@ MpiMatrix MpiMatrix::operator-(const MpiMatrix &m)
         if (!done)
         {
             // Do parallel multiplication using MPI
-            vector<sparse_matrix> matrices1 = matrix.splitToN(processors_cnt - 1);
-            vector<sparse_matrix> matrices2 = m.matrix.splitToN(processors_cnt - 1);
+            auto matrices1 = matrix.splitToN(processors_cnt - 1);
+            auto matrices2 = m.matrix.splitToN(processors_cnt - 1);
 
             for (int i = 1; i < processors_cnt; i++)
             {
-                sendMatrix(i, matrices1[i - 1]);
-                sendMatrix(i, matrices2[i - 1]);
+                sendMatrix(i, matrices1[i - 1].first);
+                sendMatrix(i, matrices2[i - 1].first);
             }
 
             vector<sparse_matrix_elem> elements;
@@ -339,13 +339,13 @@ MpiMatrix& MpiMatrix::operator-=(MpiMatrix const &m)
         if (!done)
         {
             // Do parallel multiplication using MPI
-            vector<sparse_matrix> matrices1 = matrix.splitToN(processors_cnt - 1);
-            vector<sparse_matrix> matrices2 = m.matrix.splitToN(processors_cnt - 1);
+            auto matrices1 = matrix.splitToN(processors_cnt - 1);
+            auto matrices2 = m.matrix.splitToN(processors_cnt - 1);
 
             for (int i = 1; i < processors_cnt; i++)
             {
-                sendMatrix(i, matrices1[i - 1]);
-                sendMatrix(i, matrices2[i - 1]);
+                sendMatrix(i, matrices1[i - 1].first);
+                sendMatrix(i, matrices2[i - 1].first);
             }
 
             vector<sparse_matrix_elem> elements;
@@ -366,6 +366,11 @@ MpiMatrix& MpiMatrix::operator-=(MpiMatrix const &m)
         {
             sparse_matrix matrix1 = receiveMatrix(0, column_wise);
             sparse_matrix matrix2 = receiveMatrix(0, column_wise);
+
+            printf("Received matrix 1 (%dx%d):\n", matrix1.getWidth(), matrix1.getHeight());
+            matrix1.printSparse();
+            printf("Received matrix 2 (%dx%d):\n", matrix2.getWidth(), matrix2.getHeight());
+            matrix2.printSparse();
 
             matrix1 -= matrix2;
             sendMatrix(0, matrix1);
@@ -396,13 +401,13 @@ MpiMatrix MpiMatrix::operator*(const MpiMatrix &m)
         if (!done)
         {
             // Do parallel multiplication using MPI
-            vector<sparse_matrix> matrices_col = matrix.splitToN(processors_cnt - 1);
-            vector<sparse_matrix> matrices_row = m.matrix.splitToN(processors_cnt - 1);
+            auto matrices_col = matrix.splitToN(processors_cnt - 1);
+            auto matrices_row = m.matrix.splitToN(processors_cnt - 1);
 
             for (int i = 1; i < processors_cnt; i++)
             {
-                sendMatrix(i, matrices_col[i - 1]);
-                sendMatrix(i, matrices_row[i - 1]);
+                sendMatrix(i, matrices_col[i - 1].first);
+                sendMatrix(i, matrices_row[i - 1].first);
             }
 
             result = sparse_matrix(m.matrix.getWidth(), matrix.getHeight(), column_wise);
@@ -466,16 +471,16 @@ void MpiMatrix::LU(MpiMatrix &L, MpiMatrix &U)
         if (!done)
         {
             // Split the matrix to submatrices
-            vector<sparse_matrix> matrices = matrix.splitToN(processors_cnt - 1);
+            auto matrices = matrix.splitToN(processors_cnt - 1);
 
             // Send submatrices to processors with their positions and with of original matrix
             int pos = 0;
             for (int i = 1; i < processors_cnt; i++)
             {
-                sendMatrix(i, matrices[i - 1]);
+                sendMatrix(i, matrices[i - 1].first);
                 MPI_Send(&pos, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
                 MPI_Send(&width, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-                pos += matrices[i - 1].getWidth();
+                pos += matrices[i - 1].second;
             }
 
             // Receive result from the last processor and store it as local
@@ -536,13 +541,22 @@ void MpiMatrix::ILU(MpiMatrix &L, MpiMatrix &U)
 {
     int width = matrix.getWidth();
     int height = matrix.getHeight();
-    auto local = MpiMatrix{rank, processors_cnt, matrix};
+    MpiMatrix local = MpiMatrix(rank, processors_cnt, width, height, column_wise);
     L = MpiMatrix(rank, processors_cnt, width, height, column_wise);
     U = MpiMatrix(rank, processors_cnt, width, height, row_wise);
     sparse_matrix spm;
 
+    if (rank == 0)
+    {
+        local.matrix = matrix;
+        for(int i=1; i<processors_cnt; i++)
+            MPI_Send(&width, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+    }
+    else MPI_Recv(&width, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
     for(int k=0; k<width; k++)
     {
+        printf("Enter rank %d, it = %d\n", rank, k);
         if(rank == 0)
         {
             auto l = local.matrix.getCol(k);
