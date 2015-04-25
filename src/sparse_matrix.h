@@ -37,6 +37,9 @@ public:
 // OPERATORS
 public:
 	sparse_matrix operator+(const sparse_matrix &m);
+	sparse_matrix& operator+=(const sparse_matrix &m);
+	sparse_matrix operator-(const sparse_matrix &m);
+	sparse_matrix& operator-=(const sparse_matrix &m);
 	sparse_matrix operator*(const sparse_matrix &m);
 	sparse_vector & operator[](size_t el);
 	const sparse_vector & operator[](size_t el) const;
@@ -61,6 +64,8 @@ public:
 	direction getDir() const;
 	sparse_matrix getL();
 	sparse_matrix getU();
+	sparse_vector getRow(int n);
+	sparse_vector getCol(int n);
 };
 
 #endif //__sparse_matrix_H_

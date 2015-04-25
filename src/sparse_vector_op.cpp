@@ -113,36 +113,41 @@ const double sparse_vector::operator[](int el) const
 
 sparse_vector& sparse_vector::operator*=(const double &v)
 {
+	auto value = v;
 	if (v == 0) data.clear();
-	for (int i = 0; i < size(); i++)
-		mul(i, v);
+	else
+		for (int i = 0; i < size(); i++)
+			mul(i, value);
 	return *this;
 }
 
 sparse_vector &sparse_vector::operator+=(const double &v)
 {
+	auto value = v;
 	if (v == 0) return *this;
 	for (int i = 0; i < size(); i++)
-		add(i, v);
+		add(i, value);
 	clean();
 	return *this;
 }
 
 sparse_vector &sparse_vector::operator-=(const double &v)
 {
+	auto value = v;
 	if (v == 0) return *this;
 	for (int i = 0; i < size(); i++)
-		sub(i, v);
+		sub(i, value);
 	clean();
 	return *this;
 }
 
 sparse_vector &sparse_vector::operator/=(const double &v)
 {
+	auto value = v;
 	if (v == 0)
 		throw std::runtime_error("division by zero");
 	for (int i = 0; i < size(); i++)
-		div(i, v);
+		div(i, value);
 	return *this;
 }
 

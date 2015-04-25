@@ -15,6 +15,10 @@ MpiMatrix::MpiMatrix(int rank, int proc_cnt)
         : rank(rank), processors_cnt(proc_cnt)
 { init(); }
 
+MpiMatrix::MpiMatrix(int rank, int proc_cnt, int width, int height,  direction dir)
+        : rank(rank), processors_cnt(proc_cnt), matrix(width, height, dir)
+{ init(); }
+
 MpiMatrix::MpiMatrix(int rank, int proc_cnt, sparse_matrix sp)
         : rank(rank), processors_cnt(proc_cnt), matrix(sp)
 { init(); }
@@ -199,6 +203,177 @@ MpiMatrix MpiMatrix::operator+(const MpiMatrix &m)
     return MpiMatrix(rank, processors_cnt, result);
 }
 
+MpiMatrix& MpiMatrix::operator+=(MpiMatrix const &m)
+{
+    int done = 0;
+    if (rank == 0)
+    {
+        if (matrix.getWidth() != m.matrix.getWidth() || matrix.getHeight() != m.matrix.getHeight())
+            throw std::runtime_error("Dimensions of matrices do not match");
+
+        if (matrix.getWidth() < processors_cnt || processors_cnt == 1)
+        {
+            matrix += m.matrix;
+            done = 1;
+        }
+
+        MPI_Bcast(&done, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+        if (!done)
+        {
+            // Do parallel multiplication using MPI
+            vector<sparse_matrix> matrices1 = matrix.splitToN(processors_cnt - 1);
+            vector<sparse_matrix> matrices2 = m.matrix.splitToN(processors_cnt - 1);
+
+            for (int i = 1; i < processors_cnt; i++)
+            {
+                sendMatrix(i, matrices1[i - 1]);
+                sendMatrix(i, matrices2[i - 1]);
+            }
+
+            vector<sparse_matrix_elem> elements;
+            for (int i = 1; i < processors_cnt; i++)
+            {
+                auto part_result = receiveMatrix(i, column_wise).getRawData();
+                elements.insert(elements.begin(), part_result.begin(), part_result.end());
+            }
+
+            matrix = sparse_matrix(elements, matrix.getWidth(), matrix.getHeight(), column_wise);
+        }
+    }
+    else
+    {
+        MPI_Bcast(&done, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+        if (!done)
+        {
+            sparse_matrix matrix1 = receiveMatrix(0, column_wise);
+            sparse_matrix matrix2 = receiveMatrix(0, column_wise);
+
+            matrix1 += matrix2;
+            sendMatrix(0, matrix1);
+        }
+    }
+    return *this;
+}
+
+MpiMatrix MpiMatrix::operator-(const MpiMatrix &m)
+{
+    int done = 0;
+    sparse_matrix result;
+
+    if (rank == 0)
+    {
+        if (matrix.getWidth() != m.matrix.getHeight())
+            throw std::runtime_error("Dimensions of matrices do not match");
+
+        if (matrix.getWidth() < processors_cnt || processors_cnt == 1)
+        {
+            // Do sequential addition
+            result = matrix - m.matrix;
+            done = 1;
+        }
+
+        MPI_Bcast(&done, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+        if (!done)
+        {
+            // Do parallel multiplication using MPI
+            vector<sparse_matrix> matrices1 = matrix.splitToN(processors_cnt - 1);
+            vector<sparse_matrix> matrices2 = m.matrix.splitToN(processors_cnt - 1);
+
+            for (int i = 1; i < processors_cnt; i++)
+            {
+                sendMatrix(i, matrices1[i - 1]);
+                sendMatrix(i, matrices2[i - 1]);
+            }
+
+            vector<sparse_matrix_elem> elements;
+
+            for (int i = 1; i < processors_cnt; i++)
+            {
+                auto part_result = receiveMatrix(i, column_wise).getRawData();
+                elements.insert(
+                        elements.begin(),
+                        part_result.begin(),
+                        part_result.end());
+            }
+
+            result = sparse_matrix(elements, matrix.getWidth(), matrix.getHeight(), column_wise);
+        }
+    }
+
+    if (rank != 0)
+    {
+        MPI_Bcast(&done, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+        if (!done)
+        {
+            sparse_matrix matrix1 = receiveMatrix(0, column_wise);
+            sparse_matrix matrix2 = receiveMatrix(0, column_wise);
+
+            result = matrix1 - matrix2;
+            sendMatrix(0, result);
+        }
+    }
+
+    return MpiMatrix(rank, processors_cnt, result);
+}
+
+MpiMatrix& MpiMatrix::operator-=(MpiMatrix const &m)
+{
+    int done = 0;
+    if (rank == 0)
+    {
+        if (matrix.getWidth() != m.matrix.getWidth() || matrix.getHeight() != m.matrix.getHeight())
+            throw std::runtime_error("Dimensions of matrices do not match");
+
+        if (matrix.getWidth() < processors_cnt || processors_cnt == 1)
+        {
+            matrix -= m.matrix;
+            done = 1;
+        }
+
+        MPI_Bcast(&done, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+        if (!done)
+        {
+            // Do parallel multiplication using MPI
+            vector<sparse_matrix> matrices1 = matrix.splitToN(processors_cnt - 1);
+            vector<sparse_matrix> matrices2 = m.matrix.splitToN(processors_cnt - 1);
+
+            for (int i = 1; i < processors_cnt; i++)
+            {
+                sendMatrix(i, matrices1[i - 1]);
+                sendMatrix(i, matrices2[i - 1]);
+            }
+
+            vector<sparse_matrix_elem> elements;
+            for (int i = 1; i < processors_cnt; i++)
+            {
+                auto part_result = receiveMatrix(i, column_wise).getRawData();
+                elements.insert(elements.begin(), part_result.begin(), part_result.end());
+            }
+
+            matrix = sparse_matrix(elements, matrix.getWidth(), matrix.getHeight(), column_wise);
+        }
+    }
+    else
+    {
+        MPI_Bcast(&done, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+        if (!done)
+        {
+            sparse_matrix matrix1 = receiveMatrix(0, column_wise);
+            sparse_matrix matrix2 = receiveMatrix(0, column_wise);
+
+            matrix1 -= matrix2;
+            sendMatrix(0, matrix1);
+        }
+    }
+    return *this;
+}
+
 MpiMatrix MpiMatrix::operator*(const MpiMatrix &m)
 {
     int done = 0;
@@ -356,6 +531,32 @@ void MpiMatrix::LU(MpiMatrix &L, MpiMatrix &U)
         U = MpiMatrix(rank, processors_cnt, local.getU());
     }
 }
+
+void MpiMatrix::ILU(MpiMatrix &L, MpiMatrix &U)
+{
+    int width = matrix.getWidth();
+    int height = matrix.getHeight();
+    auto local = MpiMatrix{rank, processors_cnt, matrix};
+    L = MpiMatrix(rank, processors_cnt, width, height, column_wise);
+    U = MpiMatrix(rank, processors_cnt, width, height, row_wise);
+    sparse_matrix spm;
+
+    for(int k=0; k<width; k++)
+    {
+        if(rank == 0)
+        {
+            auto l = local.matrix.getCol(k);
+            l /= l[k];
+            L.matrix[k] = l;
+            auto u = local.matrix.getRow(k);
+            U.matrix[k] = u;
+            if(k < width - 1)
+                spm = sparse_matrix(l * u, width, height, column_wise);
+        }
+        if(k < width - 1)
+            local -= MpiMatrix(rank, processors_cnt, spm);
+    }
+};
 
 bool MpiMatrix::operator==(MpiMatrix const &m)
 {

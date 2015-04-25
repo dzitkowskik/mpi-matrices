@@ -219,6 +219,17 @@ void addToMap(map<pair<int, int>, double> *value_map, const vector<sparse_matrix
 	}
 }
 
+void subToMap(map<pair<int, int>, double> *value_map, const vector<sparse_matrix_elem> &v)
+{
+	for (auto it = v.cbegin(); it != v.cend(); it++)
+	{
+		auto key = make_pair(it->col, it->row);
+		if (value_map->count(key) > 0)
+			(*value_map)[key] -= it->value;
+		else value_map->insert(pair<pair<int, int>, double>(key, it->value));
+	}
+}
+
 sparse_matrix sparse_matrix::operator+(const sparse_matrix &m)
 {
 	vector<sparse_matrix_elem> elements;
@@ -227,6 +238,26 @@ sparse_matrix sparse_matrix::operator+(const sparse_matrix &m)
 		map<pair<int, int>, double> value_map;
 		addToMap(&value_map, getRawData());
 		addToMap(&value_map, m.getRawData());
+		for (map<pair<int, int>, double>::iterator it = value_map.begin(); it != value_map.end(); it++)
+		{
+			elements.push_back(sparse_matrix_elem{get<0>(it->first), get<1>(it->first), it->second});
+		}
+	}
+	catch(exception e)
+	{
+		printf("sparse_matrix operator+ : %s", e.what());
+	}
+	return sparse_matrix(elements, width, height, dir);
+}
+
+sparse_matrix sparse_matrix::operator-(const sparse_matrix &m)
+{
+	vector<sparse_matrix_elem> elements;
+	try
+	{
+		map<pair<int, int>, double> value_map;
+		subToMap(&value_map, getRawData());
+		subToMap(&value_map, m.getRawData());
 		for (map<pair<int, int>, double>::iterator it = value_map.begin(); it != value_map.end(); it++)
 		{
 			elements.push_back(sparse_matrix_elem{get<0>(it->first), get<1>(it->first), it->second});
@@ -332,4 +363,46 @@ bool sparse_matrix::operator==(const sparse_matrix &m)
 
 bool sparse_matrix::operator!=(const sparse_matrix &m) {
 	return !(*this == m);
+}
+
+sparse_vector sparse_matrix::getRow(int n)
+{
+	if (dir == row_wise) return data[n];
+	else
+	{
+		sparse_vector result(width, row_wise);
+		for(int i=0; i<width; i++)
+			result.set(i, data[i][n]);
+		return result;
+	}
+}
+
+sparse_vector sparse_matrix::getCol(int n)
+{
+	if (dir == column_wise) return data[n];
+	else
+	{
+		sparse_vector result(height, column_wise);
+		for(int i=0; i<height; i++)
+			result.set(i, data[n][i]);
+		return result;
+	}
+}
+
+sparse_matrix& sparse_matrix::operator+=(const sparse_matrix &m)
+{
+	for(int i=0; i<width; i++)
+		for(int j=0; j<height; j++)
+			if(data[i][j] != 0) data[i][j] += m[i][j];
+	this->clean();
+	return *this;
+}
+
+sparse_matrix& sparse_matrix::operator-=(const sparse_matrix &m)
+{
+	for(int i=0; i<width; i++)
+		for(int j=0; j<height; j++)
+			if(data[i][j] != 0) data[i][j] -= m[i][j];
+	this->clean();
+	return *this;
 }

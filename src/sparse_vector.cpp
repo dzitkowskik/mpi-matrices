@@ -155,7 +155,7 @@ void sparse_vector::div(std::pair<int, double> item)
 	if (data.count(item.first) > 0)
 	{
 		if (item.second == 0) data.erase(item.first);
-		data[item.first] /= item.second;
+		else data[item.first] /= item.second;
 	}
 }
 

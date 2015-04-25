@@ -18,6 +18,7 @@ public:
 public:
 	MpiMatrix();
 	MpiMatrix(int rank, int proc_cnt);
+	MpiMatrix(int rank, int proc_cnt, int width, int height, direction dir);
 	MpiMatrix(int rank, int proc_cnt, sparse_matrix sp);
 	MpiMatrix(const MpiMatrix &m);
 	~MpiMatrix();
@@ -26,9 +27,13 @@ public:
 	void print();
 	static MpiMatrix load(const char* path, int rank, int proc_cnt, MatrixType type);
 	MpiMatrix operator+(const MpiMatrix &m);
+	MpiMatrix& operator+=(const MpiMatrix &m);
+	MpiMatrix operator-(const MpiMatrix &m);
+	MpiMatrix& operator-=(const MpiMatrix &m);
 	MpiMatrix operator*(const MpiMatrix &m);
 	bool operator==(const MpiMatrix &m);
 	void LU(MpiMatrix &L, MpiMatrix &U);
+	void ILU(MpiMatrix &L, MpiMatrix &U);
 
 private:
 	void init();
