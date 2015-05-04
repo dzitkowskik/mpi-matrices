@@ -4,7 +4,7 @@
 
 #include "cg.h"
 
-#define CG_EPS 0.1
+#define CG_EPS 0.001
 #define CG_MAX_ITERS 10
 
 sparse_vector solveILU(const sparse_matrix &L, const sparse_matrix &U, const sparse_vector &b)
@@ -51,6 +51,10 @@ int cg(const sparse_matrix &A, sparse_vector &x, sparse_vector &b, sparse_matrix
         if(residual <= CG_EPS) break;
 
         z = solveILU(L, U, r);
+        printf("r=\n");
+        r.print();
+        printf("z=\n");
+        z.print();
         rho0 = r.dot(z);
 
         if(iter==1) p = z;

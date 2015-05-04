@@ -6,6 +6,7 @@
 #include "mpimatrix.h"
 #include "generator.h"
 #include "dense_matrix.h"
+#include "cg.h"
 
 using namespace std;
 
@@ -54,6 +55,7 @@ int main (int argc, char *argv[])
 //        genRandomM(rank, size);
         printHelp();
     }
+
     m1 = MpiMatrix::load("/tmp/mat", rank, size, sparse);
     m2 = MpiMatrix::load("/tmp/mat", rank, size, sparse);
 
@@ -63,6 +65,19 @@ int main (int argc, char *argv[])
     MpiMatrix L, U, CL, CU;
     m1.LU(CL, CU);
     m1.ILU(L, U);
+
+    // CG non-mpi test
+    if (rank == 0)
+    {
+        m1.matrix.transpose();
+        sparse_vector x(4, column_wise);
+        x[0] = x[1] = x[2] = x[3] = 0;
+        sparse_vector b(4, column_wise);
+        b[0] = 1; b[1] = 2; b[2] = 3; b[3] = 4;
+        cg(m1.matrix, x, b, CL.matrix, CU.matrix);
+        printf("RESULT X =\n");
+        x.print();
+    }
 
     if (rank == 0)
     {

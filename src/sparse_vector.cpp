@@ -184,6 +184,7 @@ void sparse_vector::print() const
 {
 	for (auto it = data.cbegin(); it != data.cend(); it++)
 		printf("(%d)=>%f", it->first, it->second);
+	printf("\n");
 }
 
 double sparse_vector::l2_norm() const
