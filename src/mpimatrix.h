@@ -34,6 +34,7 @@ public:
 	bool operator==(const MpiMatrix &m);
 	void LU(MpiMatrix &L, MpiMatrix &U);
 	void ILU(MpiMatrix &L, MpiMatrix &U);
+	void ILU_old(MpiMatrix &L, MpiMatrix &U);
 
 private:
 	void init();

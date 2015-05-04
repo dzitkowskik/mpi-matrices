@@ -47,6 +47,9 @@ int main (int argc, char *argv[])
     MpiMatrix L, U;
     m1.ILU(L, U);
 
+    MpiMatrix OL, OU;
+    m1.ILU_old(OL, OU);
+
     if (rank == 0)
     {
         printf("Matrix 1: \n");
@@ -58,14 +61,21 @@ int main (int argc, char *argv[])
         mult_result.print();
         printf("Sum:\n");
         add_result.print();
+
         printf("L:\n");
         L.print();
         printf("U:\n");
         U.print();
+
         printf("CL:\n");
         CL.print();
         printf("CU:\n");
         CU.print();
+
+        printf("OL:\n");
+        OL.print();
+        printf("OU:\n");
+        OU.print();
     }
     MPI_Finalize();
     return 0;

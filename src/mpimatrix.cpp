@@ -539,6 +539,99 @@ void MpiMatrix::LU(MpiMatrix &L, MpiMatrix &U)
 
 void MpiMatrix::ILU(MpiMatrix &L, MpiMatrix &U)
 {
+    int done = 0;
+    int width = matrix.getWidth();
+    int height = matrix.getHeight();
+
+    sparse_matrix local(matrix);
+    // We want to have column wise sparse matrix
+    if (local.getDir() == row_wise) local.transpose();
+
+    if (rank == 0)
+    {
+        if (width < processors_cnt || processors_cnt == 1)
+        {
+            // Do sequential LU
+            for (int k = 0; k < width; k++)
+            {
+                for (int i = k + 1; i < height; i++)
+                    local[k][i] /= local[k][k];
+                for (int i = k + 1; i < width; i++)
+                    for (int j = k + 1; j < height; j++)
+                        if (local[i][j] != 0)
+                            local[i][j] = local[i][j] - local[i][k] * local[k][j];
+            }
+            done = 1;
+        }
+
+        MPI_Bcast(&done, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+        if (!done)
+        {
+            // Split the matrix to submatrices
+            auto matrices = matrix.splitToN(processors_cnt - 1);
+
+            // Send submatrices to processors with their positions and with of original matrix
+            int pos = 0;
+            for (int i = 1; i < processors_cnt; i++)
+            {
+                sendMatrix(i, matrices[i - 1].first);
+                MPI_Send(&pos, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+                MPI_Send(&width, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+                pos += matrices[i - 1].second;
+            }
+
+            // Receive result from the last processor and store it as local
+            local = receiveMatrix(processors_cnt - 1, column_wise);
+        }
+    }
+    if (rank > 0)
+    {
+        // Receive matrix and position
+        int pos = 0, n = 0;
+        local = receiveMatrix(0, column_wise);
+        height = local.getHeight();
+        MPI_Recv(&pos, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Recv(&n, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+        int min = pos;
+        int len = n / (processors_cnt - 1);
+        int max = rank == processors_cnt - 1 ? n - 1 : len - 1;
+
+        // Compute
+        for (int k = 0; k < n; k++)
+        {
+            if (k <= max)
+            {
+                if (k >= min)
+                {
+                    for (int i = k + 1; i < height; i++)
+                        local[k][i] /= local[k][k];
+                    for (int i = rank + 1; i < processors_cnt; i++)
+                        sendVector(i, local[k]);
+                }
+                else local[k] = receiveVector(MPI_ANY_SOURCE);
+            }
+            for (int i = (((k + 1) > min) ? (k + 1) : min); i <= max; i++)
+                for (int j = k + 1; j < n; j++)
+                    if (local[i][j] != 0)
+                    local[i][j] = local[i][j] - local[i][k] * local[k][j];
+        }
+
+        // Last processor sends result
+        if (rank == processors_cnt - 1)
+            sendMatrix(0, local);
+    }
+    if (rank == 0)
+    {
+        // Retrieve L and U matrices
+        L = MpiMatrix(rank, processors_cnt, local.getL());
+        U = MpiMatrix(rank, processors_cnt, local.getU());
+    }
+}
+
+void MpiMatrix::ILU_old(MpiMatrix &L, MpiMatrix &U)
+{
     int width = matrix.getWidth();
     int height = matrix.getHeight();
     MpiMatrix local = MpiMatrix(rank, processors_cnt, width, height, column_wise);
@@ -549,28 +642,28 @@ void MpiMatrix::ILU(MpiMatrix &L, MpiMatrix &U)
     if (rank == 0)
     {
         local.matrix = matrix;
-        for(int i=1; i<processors_cnt; i++)
+        for (int i = 1; i < processors_cnt; i++)
             MPI_Send(&width, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
     }
     else MPI_Recv(&width, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-    for(int k=0; k<width; k++)
+    for (int k = 0; k < width; k++)
     {
         printf("Enter rank %d, it = %d\n", rank, k);
-        if(rank == 0)
+        if (rank == 0)
         {
             auto l = local.matrix.getCol(k);
             l /= l[k];
             L.matrix[k] = l;
             auto u = local.matrix.getRow(k);
             U.matrix[k] = u;
-            if(k < width - 1)
+            if (k < width - 1)
                 spm = sparse_matrix(l * u, width, height, column_wise);
         }
-        if(k < width - 1)
+        if (k < width - 1)
             local -= MpiMatrix(rank, processors_cnt, spm);
     }
-};
+}
 
 bool MpiMatrix::operator==(MpiMatrix const &m)
 {
