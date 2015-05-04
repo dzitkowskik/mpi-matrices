@@ -3,6 +3,8 @@
 //
 
 #include "sparse_vector.h"
+#include <math.h>
+#include <assert.h>
 
 // CONSTRUCTORS
 
@@ -184,21 +186,28 @@ void sparse_vector::print() const
 		printf("(%d)=>%f", it->first, it->second);
 }
 
-bool sparse_vector::operator==(const sparse_vector &v)
+double sparse_vector::l2_norm() const
 {
-	try
-	{
-		for (int i = 0; i < length; i++)
-			if (abs(data[i] - v[i]) > 0.01) return false;
-		return true;
-	}
-	catch(...)
-	{
-		return false;
-	}
+	double acc = 0.;
+	for (auto it = data.cbegin(); it != data.cend(); it++)
+		acc += it->second * it->second;
+	return sqrt(acc);
 }
 
-bool sparse_vector::operator!=(const sparse_vector &v)
+double sparse_vector::sum() const
 {
-	return !(*this == v);
+	double acc = 0.;
+	for (auto it = data.cbegin(); it != data.cend(); it++)
+		acc += it->second ;
+	return acc;
+}
+
+double sparse_vector::dot(const sparse_vector &other) const
+{
+	double acc = 0.;
+	assert(this->size() == other.size());
+	for(int i=0; i<length; i++)
+		acc += (*this)[i] * other[i];
+
+	return acc;
 }

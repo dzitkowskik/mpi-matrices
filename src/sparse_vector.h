@@ -33,20 +33,22 @@ public:
 	double &operator[](int el);
 	const double operator[](int el) const;
 
-	sparse_vector operator+(const sparse_vector &m);
-	sparse_vector operator-(const sparse_vector &m);
+	sparse_vector operator+(const sparse_vector &v);
+	sparse_vector operator-(const sparse_vector &v);
+	std::vector<sparse_matrix_elem> operator*(const sparse_vector &v);
 
-	std::vector<sparse_matrix_elem> operator*(const sparse_vector &m);
+	sparse_vector operator+(const double &d);
+	sparse_vector operator-(const double &d);
+	sparse_vector operator*(const double &d);
+	sparse_vector operator/(const double &d);
 
-	sparse_vector operator+(const double &m);
-	sparse_vector operator-(const double &m);
-	sparse_vector operator*(const double &m);
-	sparse_vector operator/(const double &m);
+	sparse_vector& operator+=(const double &d);
+	sparse_vector& operator-=(const double &d);
+	sparse_vector& operator*=(const double &d);
+	sparse_vector& operator/=(const double &d);
 
-	sparse_vector &operator+=(const double &v);
-	sparse_vector &operator-=(const double &v);
-	sparse_vector &operator*=(const double &v);
-	sparse_vector &operator/=(const double &v);
+	sparse_vector& operator+=(const sparse_vector &v);
+	sparse_vector& operator-=(const sparse_vector &v);
 
 	bool operator==(const sparse_vector &v);
 	bool operator!=(const sparse_vector &v);
@@ -82,6 +84,9 @@ public:
 
 	// OTHER
 	std::vector<sparse_matrix_elem> getElements(direction d, int x = 0) const;
+	double l2_norm() const;
+	double sum() const;
+	double dot(const sparse_vector &other) const;
 };
 
 #endif //MPI_MATRICES_SPARSE_VECTOR_H

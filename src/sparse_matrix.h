@@ -41,6 +41,9 @@ public:
 	sparse_matrix operator-(const sparse_matrix &m);
 	sparse_matrix& operator-=(const sparse_matrix &m);
 	sparse_matrix operator*(const sparse_matrix &m);
+
+	sparse_vector operator*(const sparse_vector &v) const;
+
 	sparse_vector & operator[](size_t el);
 	const sparse_vector & operator[](size_t el) const;
 	bool operator==(const sparse_matrix &m);

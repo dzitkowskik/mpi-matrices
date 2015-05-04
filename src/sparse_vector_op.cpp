@@ -2,6 +2,7 @@
 // Created by Karol Dzitkowski on 30.03.15.
 //
 
+#include <assert.h>
 #include "sparse_vector.h"
 
 sparse_vector sparse_vector::operator+(const sparse_vector &m)
@@ -150,4 +151,42 @@ sparse_vector &sparse_vector::operator/=(const double &v)
 		div(i, value);
 	return *this;
 }
+
+sparse_vector& sparse_vector::operator+=(const sparse_vector &v)
+{
+	assert(length == v.size());
+	for(int i=0; i < length; i++)
+		set(i, get(i)+v[i]);
+	this->clean();
+	return *this;
+}
+
+sparse_vector& sparse_vector::operator-=(const sparse_vector &v)
+{
+	assert(length == v.size());
+	for(int i=0; i < length; i++)
+		set(i, get(i)-v[i]);
+	this->clean();
+	return *this;
+}
+
+bool sparse_vector::operator==(const sparse_vector &v)
+{
+	try
+	{
+		for (int i = 0; i < length; i++)
+			if (abs(data[i] - v[i]) > 0.01) return false;
+		return true;
+	}
+	catch(...)
+	{
+		return false;
+	}
+}
+
+bool sparse_vector::operator!=(const sparse_vector &v)
+{
+	return !(*this == v);
+}
+
 
