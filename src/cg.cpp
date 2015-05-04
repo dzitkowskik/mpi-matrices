@@ -2,7 +2,7 @@
 // Created by ghash on 04.05.15.
 //
 
-#include "sparse_matrix.h"
+#include "cg.h"
 
 #define CG_EPS 0.1
 #define CG_MAX_ITERS 10
