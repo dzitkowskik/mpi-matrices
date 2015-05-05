@@ -305,3 +305,55 @@ sparse_matrix MpiMatrixHelper::mul(const sparse_matrix &a, const sparse_matrix &
 
     return result;
 }
+
+sparse_vector MpiMatrixHelper::mul(const sparse_matrix &A, const sparse_vector &x)
+{
+    int done = 0;
+    sparse_vector result(x.size(), column_wise);
+
+    if (rank == 0)
+    {
+        if (A.getWidth() != x.size())
+            throw std::runtime_error("Dimensions of matrices do not match");
+
+        if (A.getWidth() < processors_cnt || processors_cnt == 1)
+        {
+            // Do sequential multiplication
+            result = A * x;
+            done = 1;
+        }
+
+        MPI_Bcast(&done, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+        if (!done)
+        {
+            // Do parallel multiplication using MPI
+            auto matrices_col = A.splitToN(processors_cnt - 1);
+
+            for (int i = 1; i < processors_cnt; i++)
+            {
+                sendVector(i, x);
+                sendMatrix(i, matrices_col[i - 1].first);
+            }
+
+            for (int i = 1; i < processors_cnt; i++)
+                result += receiveVector(i);
+        }
+    }
+
+    if (rank != 0)
+    {
+        MPI_Bcast(&done, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+        if (!done)
+        {
+            sparse_vector vec = receiveVector(0);
+            sparse_matrix col_matrix = receiveMatrix(0, column_wise);
+
+            result = col_matrix * vec;
+            sendVector(0, result);
+        }
+    }
+
+    return result;
+}

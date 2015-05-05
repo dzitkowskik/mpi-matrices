@@ -30,6 +30,9 @@ public:
 	void subto(sparse_matrix &to, const sparse_matrix &what);
 //	void multo(sparse_matrix &to, const sparse_matrix &what);
 //	void divto(sparse_matrix &to, const sparse_matrix &what);
+
+	sparse_vector mul(const sparse_matrix &A, const sparse_vector &x);
+
 	void LU(const sparse_matrix &A, sparse_matrix &L, sparse_matrix &U);
 	void ILU(const sparse_matrix &A, sparse_matrix &L, sparse_matrix &U);
 	sparse_vector CG(const sparse_matrix &A, const sparse_vector &b);

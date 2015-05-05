@@ -53,6 +53,9 @@ void MpiMatrixHelper::LU(const sparse_matrix &A, sparse_matrix &L, sparse_matrix
     }
     if (rank > 0)
     {
+        MPI_Bcast(&done, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        if (done) return;
+
         // Receive matrix and position
         int pos = 0, n = 0;
         local = receiveMatrix(0, column_wise);
@@ -108,6 +111,7 @@ void MpiMatrixHelper::ILU(const sparse_matrix &A, sparse_matrix &L, sparse_matri
     int height = A.getHeight();
 
     sparse_matrix local(A);
+
     // We want to have column wise sparse matrix
     if (local.getDir() == row_wise) local.transpose();
 
@@ -151,6 +155,9 @@ void MpiMatrixHelper::ILU(const sparse_matrix &A, sparse_matrix &L, sparse_matri
     }
     if (rank > 0)
     {
+        MPI_Bcast(&done, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        if (done) return;
+
         // Receive matrix and position
         int pos = 0, n = 0;
         local = receiveMatrix(0, column_wise);

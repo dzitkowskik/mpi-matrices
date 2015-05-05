@@ -8,7 +8,7 @@
 sparse_vector sparse_vector::operator+(const sparse_vector &m) const
 {
 	auto result = sparse_vector(m);
-	for (auto it = data.begin(); it != data.end(); it++)
+	for (auto it = data.cbegin(); it != data.cend(); it++)
 		result.add(*it);
 	result.clean();
 	return result;
@@ -17,7 +17,7 @@ sparse_vector sparse_vector::operator+(const sparse_vector &m) const
 sparse_vector sparse_vector::operator-(const sparse_vector &m) const
 {
 	auto result = sparse_vector(*this);
-	for (auto it = m.data.begin(); it != m.data.end(); it++)
+	for (auto it = m.data.cbegin(); it != m.data.cend(); it++)
 		result.sub(*it);
 	result.clean();
 	return result;

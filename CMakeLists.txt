@@ -17,8 +17,6 @@ set(SOURCE_FILES
     src/dense_matrix.h
     src/generator.cpp
     src/generator.h
-    src/cg.cpp
-    src/cg.h
     src/direction.h
     src/sparse_matrix_elem.h
     src/main.cpp
@@ -31,7 +29,8 @@ set(SOURCE_FILES
     src/sparse_vector.h
     src/sparse_matrix.cpp
     src/sparse_matrix_op.cpp
-    src/sparse_matrix.h)
+    src/sparse_matrix.h
+    src/mpimatrix_cg.cpp)
 
 add_executable(mpi_matrices ${SOURCE_FILES})
 
