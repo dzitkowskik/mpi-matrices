@@ -28,19 +28,23 @@ public:
 	sparse_vector(const sparse_vector &other);
 	~sparse_vector();
 
+private:
+	sparse_vector(double);
+	sparse_vector(float);
+
 // OPERATORS
 public:
 	double &operator[](int el);
 	const double operator[](int el) const;
 
-	sparse_vector operator+(const sparse_vector &v);
-	sparse_vector operator-(const sparse_vector &v);
-	std::vector<sparse_matrix_elem> operator*(const sparse_vector &v);
+	sparse_vector operator+(const sparse_vector &v) const;
+	sparse_vector operator-(const sparse_vector &v) const;
+	std::vector<sparse_matrix_elem> operator*(const sparse_vector &v) const;
 
-	sparse_vector operator+(const double &d);
-	sparse_vector operator-(const double &d);
-	sparse_vector operator*(const double &d);
-	sparse_vector operator/(const double &d);
+	sparse_vector operator+(const double &d) const;
+	sparse_vector operator-(const double &d) const;
+	sparse_vector operator*(const double &d) const;
+	sparse_vector operator/(const double &d) const;
 
 	sparse_vector& operator+=(const double &d);
 	sparse_vector& operator-=(const double &d);
@@ -50,8 +54,8 @@ public:
 	sparse_vector& operator+=(const sparse_vector &v);
 	sparse_vector& operator-=(const sparse_vector &v);
 
-	bool operator==(const sparse_vector &v);
-	bool operator!=(const sparse_vector &v);
+	bool operator==(const sparse_vector &v) const;
+	bool operator!=(const sparse_vector &v) const;
 
 // GETTERS AND SETTERS
 public:

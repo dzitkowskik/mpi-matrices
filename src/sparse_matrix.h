@@ -36,12 +36,11 @@ public:
 
 // OPERATORS
 public:
-	sparse_matrix operator+(const sparse_matrix &m);
+	sparse_matrix operator+(const sparse_matrix &m) const;
 	sparse_matrix& operator+=(const sparse_matrix &m);
-	sparse_matrix operator-(const sparse_matrix &m);
+	sparse_matrix operator-(const sparse_matrix &m) const;
 	sparse_matrix& operator-=(const sparse_matrix &m);
-	sparse_matrix operator*(const sparse_matrix &m);
-
+	sparse_matrix operator*(const sparse_matrix &m) const;
 	sparse_vector operator*(const sparse_vector &v) const;
 
 	sparse_vector & operator[](size_t el);
@@ -51,11 +50,12 @@ public:
 
 // METHODS
 public:
+	void fill(vector<sparse_matrix_elem> elements);
 	void resize(int w, int h);
 	void transpose();
 	void init();
 	void clean();
-	void printSparse();
+	void printSparse() const;
 	void createMatrixByRows(vector<sparse_matrix_elem> elements);
 	void createMatrixByCols(vector<sparse_matrix_elem> elements);
 	vector<std::pair<sparse_matrix, int>> splitToN(int N) const;

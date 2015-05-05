@@ -10,33 +10,37 @@
 
 using namespace std;
 
-void printHelp()
+void printHelp(int rank)
 {
+    if (rank != 0) return;
     printf("This program is using MPI to do operations on sparse matrices\n");
     printf("Usage:\n");
     printf("./program <matrix_file_path> <matrix_file_path> <operation>\n");
 }
 
-void printLU(MpiMatrix &L, MpiMatrix &U, const char* name)
+void printLU(int rank, sparse_matrix &L, sparse_matrix &U, const char* name)
 {
+    if (rank != 0) return;
     printf("%s L:\n", name);
-    L.print();
+    L.printSparse();
     printf("%s U:\n", name);
-    U.print();
+    U.printSparse();
 }
 
-void printM(MpiMatrix &M, const char* name)
+void printM(int rank, sparse_matrix &M, const char* name)
 {
+    if (rank != 0) return;
     printf("%s:\n", name);
-    M.print();
+    M.printSparse();
 }
 
 void genRandomM(int rank, int size)
 {
+    if (rank != 0) return;
     auto randM = Generator(rank, size).GenerateRandomMatrix(10, 10, 25, column_wise);
     printf("Random sparse matrix: \n");
-    randM.print();
-    auto densM = dense_matrix(randM.matrix);
+    randM.printSparse();
+    auto densM = dense_matrix(randM);
     printf("dense matrix: \n");
     densM.printDense();
 }
@@ -49,45 +53,38 @@ int main (int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD,&rank);
     MPI_Comm_size(MPI_COMM_WORLD,&size);
 
-    MpiMatrix m1, m2;
-    if (rank == 0)
-    {
+    MpiMatrixHelper mpi_helper(rank, size);
+
 //        genRandomM(rank, size);
-        printHelp();
-    }
+    printHelp(rank);
 
-    m1 = MpiMatrix::load("/tmp/mat", rank, size, sparse);
-    m2 = MpiMatrix::load("/tmp/mat", rank, size, sparse);
+    auto m1 = mpi_helper.load("/tmp/mat", sparse);
+    auto m2 = mpi_helper.load("/tmp/mat", sparse);
 
-    MpiMatrix mult_result = m1*m2;
-    MpiMatrix add_result = m1+m2;
+    sparse_matrix mult_result = mpi_helper.mul(m1, m2);
+    sparse_matrix add_result = mpi_helper.add(m1, m2);
 
-    MpiMatrix L, U, CL, CU;
-    m1.LU(CL, CU);
-    m1.ILU(L, U);
+    sparse_matrix L, U, CL, CU;
+    mpi_helper.LU(m1, CL, CU);
+    mpi_helper.ILU(m1, L, U);
 
     // CG non-mpi test
-    if (rank == 0)
-    {
-        m1.matrix.transpose();
-        sparse_vector x(4, column_wise);
-        x[0] = x[1] = x[2] = x[3] = 0;
-        sparse_vector b(4, column_wise);
-        b[0] = 1; b[1] = 2; b[2] = 3; b[3] = 4;
-        cg(m1.matrix, x, b, CL.matrix, CU.matrix);
-        printf("RESULT X =\n");
-        x.print();
-    }
+    m1.transpose();
+    sparse_vector x(4, column_wise);
+    x[0] = x[1] = x[2] = x[3] = 0;
+    sparse_vector b(4, column_wise);
+    b[0] = 1; b[1] = 2; b[2] = 3; b[3] = 4;
+    cg(m1, x, b, L, U);
+    printf("RESULT X =\n");
+    x.print();
 
-    if (rank == 0)
-    {
-        printM(m1, "Matrix 1");
-        printM(m2, "Matrix 2");
-        printM(mult_result, "Multiplication");
-        printM(add_result, "Sum");
-        printLU(L, U, "ILU ");
-        printLU(CL, CU, "LU ");
-    }
+    printM(rank, m1, "Matrix 1");
+    printM(rank, m2, "Matrix 2");
+    printM(rank, mult_result, "Multiplication");
+    printM(rank, add_result, "Sum");
+    printLU(rank, L, U, "ILU ");
+    printLU(rank, CL, CU, "LU ");
+
     MPI_Finalize();
     return 0;
 }

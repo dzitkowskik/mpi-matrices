@@ -5,7 +5,7 @@
 #include <assert.h>
 #include "sparse_vector.h"
 
-sparse_vector sparse_vector::operator+(const sparse_vector &m)
+sparse_vector sparse_vector::operator+(const sparse_vector &m) const
 {
 	auto result = sparse_vector(m);
 	for (auto it = data.begin(); it != data.end(); it++)
@@ -14,7 +14,7 @@ sparse_vector sparse_vector::operator+(const sparse_vector &m)
 	return result;
 }
 
-sparse_vector sparse_vector::operator-(const sparse_vector &m)
+sparse_vector sparse_vector::operator-(const sparse_vector &m) const
 {
 	auto result = sparse_vector(*this);
 	for (auto it = m.data.begin(); it != m.data.end(); it++)
@@ -23,7 +23,7 @@ sparse_vector sparse_vector::operator-(const sparse_vector &m)
 	return result;
 }
 
-std::vector<sparse_matrix_elem> sparse_vector::operator*(const sparse_vector &m)
+std::vector<sparse_matrix_elem> sparse_vector::operator*(const sparse_vector &m) const
 {
 	auto result = std::vector<sparse_matrix_elem>{};
 	auto value = double{ 0.0f };
@@ -59,7 +59,7 @@ std::vector<sparse_matrix_elem> sparse_vector::operator*(const sparse_vector &m)
 	return result;
 }
 
-sparse_vector sparse_vector::operator*(const double &m)
+sparse_vector sparse_vector::operator*(const double &m) const
 {
 	auto result = sparse_vector(*this);
 	if (m == 0) result.clear();
@@ -68,7 +68,7 @@ sparse_vector sparse_vector::operator*(const double &m)
 	return result;
 }
 
-sparse_vector sparse_vector::operator/(const double &m)
+sparse_vector sparse_vector::operator/(const double &m) const
 {
 	auto result = sparse_vector(*this);
 	if (m == 0)
@@ -78,7 +78,7 @@ sparse_vector sparse_vector::operator/(const double &m)
 	return result;
 }
 
-sparse_vector sparse_vector::operator+(const double &m)
+sparse_vector sparse_vector::operator+(const double &m) const
 {
 	auto result = sparse_vector(*this);
 	if (m == 0) return result;
@@ -88,7 +88,7 @@ sparse_vector sparse_vector::operator+(const double &m)
 	return result;
 }
 
-sparse_vector sparse_vector::operator-(const double &m)
+sparse_vector sparse_vector::operator-(const double &m) const
 {
 	auto result = sparse_vector(*this);
 	if (m == 0) return result;
@@ -170,12 +170,15 @@ sparse_vector& sparse_vector::operator-=(const sparse_vector &v)
 	return *this;
 }
 
-bool sparse_vector::operator==(const sparse_vector &v)
+bool sparse_vector::operator==(const sparse_vector &v) const
 {
 	try
 	{
 		for (int i = 0; i < length; i++)
-			if (abs(data[i] - v[i]) > 0.01) return false;
+		{
+			double diff = (*this)[i] - v[i];
+			if (abs(diff) > 0.01) return false;
+		}
 		return true;
 	}
 	catch(...)
@@ -184,7 +187,7 @@ bool sparse_vector::operator==(const sparse_vector &v)
 	}
 }
 
-bool sparse_vector::operator!=(const sparse_vector &v)
+bool sparse_vector::operator!=(const sparse_vector &v) const
 {
 	return !(*this == v);
 }

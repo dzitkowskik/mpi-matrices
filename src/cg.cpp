@@ -12,11 +12,12 @@ sparse_vector solveILU(const sparse_matrix &L, const sparse_matrix &U, const spa
     int n = b.size();
     double *tmp = new double[n];
     sparse_vector x(n);
-    auto sum = 0.0f;
+
 
     // Solve L
     for (int r = 0; r < n; ++r)
     {
+        auto sum = 0.0f;
         for (int c = 0; c < r; ++c)
             sum += L[c][r] * tmp[c];
         tmp[r] = (b[r] - sum) / L[r][r];
@@ -25,6 +26,7 @@ sparse_vector solveILU(const sparse_matrix &L, const sparse_matrix &U, const spa
     // Solve U
     for (int r = n - 1; r >= 0; --r)
     {
+        auto sum = 0.0f;
         for (int c = r + 1; c < n; ++c)
             sum += U[c][r] * x[c];
         x[r] = (tmp[r] - sum) / U[r][r];
@@ -34,9 +36,15 @@ sparse_vector solveILU(const sparse_matrix &L, const sparse_matrix &U, const spa
     return x;
 }
 
+void printV(sparse_vector &v, const char* name)
+{
+    printf("%s=\n", name);
+    v.print();
+}
+
 int cg(const sparse_matrix &A, sparse_vector &x, sparse_vector &b, sparse_matrix &L, sparse_matrix &U)
 {
-    int iter = 1;
+    int iter;
     double alpha, beta, rho0, rho1;
     sparse_vector p, z, q;
 
@@ -46,15 +54,11 @@ int cg(const sparse_matrix &A, sparse_vector &x, sparse_vector &b, sparse_matrix
     if (normb == 0.0) normb = 1.0;
     double residual = r.l2_norm() / normb;
 
-    for(; iter <= CG_MAX_ITERS; iter++)
+    for(iter = 1; iter <= CG_MAX_ITERS; iter++)
     {
         if(residual <= CG_EPS) break;
 
         z = solveILU(L, U, r);
-        printf("r=\n");
-        r.print();
-        printf("z=\n");
-        z.print();
         rho0 = r.dot(z);
 
         if(iter==1) p = z;
@@ -71,6 +75,9 @@ int cg(const sparse_matrix &A, sparse_vector &x, sparse_vector &b, sparse_matrix
 
         rho1 = rho0;
         residual = r.l2_norm() / normb;
+
+//        printV(r, "r"); printV(z, "z");
+//        printf("residual = %f\n", residual);
     }
 
     return iter;

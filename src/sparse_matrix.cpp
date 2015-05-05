@@ -12,11 +12,7 @@ using namespace std;
 
 sparse_matrix::sparse_matrix(vector<sparse_matrix_elem> elements, int width, int height, direction d)
 		: dir(d), width(width), height(height)
-{
-	init();
-	if (dir == column_wise) createMatrixByCols(elements);
-	else if (dir == row_wise) createMatrixByRows(elements);
-}
+{ fill(elements); }
 
 sparse_matrix::sparse_matrix(const sparse_matrix &m)
 {
@@ -153,7 +149,7 @@ sparse_matrix sparse_matrix::fromDenseFile(const char *name, direction d)
 	return sparse_matrix(elements, width, height, d);
 }
 
-void sparse_matrix::printSparse()
+void sparse_matrix::printSparse() const
 {
 	auto raw_data = getRawData();
 	printf("col\trow\tvalue\n");
@@ -280,4 +276,11 @@ sparse_vector sparse_matrix::getCol(int n)
 			result.set(i, data[n][i]);
 		return result;
 	}
+}
+
+void sparse_matrix::fill(vector<sparse_matrix_elem> elements)
+{
+	init();
+	if (dir == column_wise) createMatrixByCols(elements);
+	else if (dir == row_wise) createMatrixByRows(elements);
 }

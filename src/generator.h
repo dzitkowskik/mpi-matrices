@@ -10,5 +10,5 @@ public:
     Generator(int rank, int proc_cnt) : rank(rank), proc_cnt(proc_cnt) {};
     ~Generator() {};
 
-    MpiMatrix GenerateRandomMatrix(int width, int height, int num, direction dir);
+    sparse_matrix GenerateRandomMatrix(int width, int height, int num, direction dir);
 };

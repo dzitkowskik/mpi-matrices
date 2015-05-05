@@ -17,16 +17,23 @@ set(SOURCE_FILES
     src/dense_matrix.h
     src/generator.cpp
     src/generator.h
+    src/cg.cpp
+    src/cg.h
+    src/direction.h
+    src/sparse_matrix_elem.h
     src/main.cpp
     src/mpimatrix.cpp
+    src/mpimatrix_op.cpp
+    src/mpimatrix_lu.cpp
     src/mpimatrix.h
     src/sparse_vector.cpp
     src/sparse_vector_op.cpp
     src/sparse_vector.h
     src/sparse_matrix.cpp
+    src/sparse_matrix_op.cpp
     src/sparse_matrix.h)
 
-add_executable(mpi_matrices ${SOURCE_FILES} src/cg.h src/cg.cpp src/sparse_matrix_op.cpp src/cg.h)
+add_executable(mpi_matrices ${SOURCE_FILES})
 
 target_link_libraries(mpi_matrices ${MPI_LIBRARIES})
 

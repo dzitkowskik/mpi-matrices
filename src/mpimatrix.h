@@ -1,48 +1,44 @@
 #ifndef MPI_MATRIX_H
 #define MPI_MATRIX_H
 
-
 #include <mpi.h>
 #include "sparse_matrix.h"
 
-enum MatrixType { sparse, dense };
+enum MatrixType { sparse, dense, MatrixType_count };
 
-class MpiMatrix
+class MpiMatrixHelper
 {
 public:
 	int rank;
 	int processors_cnt;
-	sparse_matrix matrix;
 	MPI_Datatype sparse_elem_type;
 
 public:
-	MpiMatrix();
-	MpiMatrix(int rank, int proc_cnt);
-	MpiMatrix(int rank, int proc_cnt, int width, int height, direction dir);
-	MpiMatrix(int rank, int proc_cnt, sparse_matrix sp);
-	MpiMatrix(const MpiMatrix &m);
-	~MpiMatrix();
+	MpiMatrixHelper();
+	MpiMatrixHelper(int rank, int proc_cnt);
+	MpiMatrixHelper(const MpiMatrixHelper &m);
+	~MpiMatrixHelper();
 
 public:
-	void print();
-	static MpiMatrix load(const char* path, int rank, int proc_cnt, MatrixType type);
-	MpiMatrix operator+(const MpiMatrix &m);
-	MpiMatrix& operator+=(const MpiMatrix &m);
-	MpiMatrix operator-(const MpiMatrix &m);
-	MpiMatrix& operator-=(const MpiMatrix &m);
-	MpiMatrix operator*(const MpiMatrix &m);
-	bool operator==(const MpiMatrix &m);
-	void LU(MpiMatrix &L, MpiMatrix &U);
-	void ILU(MpiMatrix &L, MpiMatrix &U);
-	void ILU_old(MpiMatrix &L, MpiMatrix &U);
+	sparse_matrix load(const char* path, MatrixType type, direction dir = column_wise);
+
+	sparse_matrix add(const sparse_matrix &a, const sparse_matrix &b);
+	sparse_matrix sub(const sparse_matrix &a, const sparse_matrix &b);
+	sparse_matrix mul(const sparse_matrix &a, const sparse_matrix &b);
+//	sparse_matrix div(const sparse_matrix &a, const sparse_matrix &b);
+	void addto(sparse_matrix &to, const sparse_matrix &what);
+	void subto(sparse_matrix &to, const sparse_matrix &what);
+//	void multo(sparse_matrix &to, const sparse_matrix &what);
+//	void divto(sparse_matrix &to, const sparse_matrix &what);
+	void LU(const sparse_matrix &A, sparse_matrix &L, sparse_matrix &U);
+	void ILU(const sparse_matrix &A, sparse_matrix &L, sparse_matrix &U);
+	sparse_vector CG(const sparse_matrix &A, const sparse_vector &b);
 
 private:
 	void init();
 	void createSparseElemDatatype();
 	void sendMatrix(int node, sparse_matrix matrix);
 	sparse_matrix receiveMatrix(int node, direction dir);
-	void loadSparse(const char *path, direction dir);
-	void loadDense(const char *path, direction dir);
 	void sendVector(int node, sparse_vector vector);
 	sparse_vector receiveVector(int node);
 };

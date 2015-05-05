@@ -26,7 +26,7 @@ void subToMap(map<pair<int, int>, double> *value_map, const vector<sparse_matrix
     }
 }
 
-sparse_matrix sparse_matrix::operator+(const sparse_matrix &m)
+sparse_matrix sparse_matrix::operator+(const sparse_matrix &m) const
 {
     vector<sparse_matrix_elem> elements;
     try
@@ -46,7 +46,7 @@ sparse_matrix sparse_matrix::operator+(const sparse_matrix &m)
     return sparse_matrix(elements, width, height, dir);
 }
 
-sparse_matrix sparse_matrix::operator-(const sparse_matrix &m)
+sparse_matrix sparse_matrix::operator-(const sparse_matrix &m) const
 {
     vector<sparse_matrix_elem> elements;
     try
@@ -66,17 +66,12 @@ sparse_matrix sparse_matrix::operator-(const sparse_matrix &m)
     return sparse_matrix(elements, width, height, dir);
 }
 
-sparse_matrix sparse_matrix::operator*(const sparse_matrix &m)
+sparse_matrix sparse_matrix::operator*(const sparse_matrix &m) const
 {
     sparse_matrix result(m.width, height, dir);
 
-    // TODO: FIX THIS - IT IS VERY SLOW!!!
-
     for (int i = 0; i < width; i++)
-    {
-        sparse_matrix tmp = sparse_matrix(data[i] * m.data[i], m.width, height, dir);
-        result = result + tmp;
-    }
+        result += sparse_matrix(data[i] * m.data[i], m.width, height, dir);
 
     return result;
 }
@@ -85,7 +80,7 @@ sparse_matrix &sparse_matrix::operator+=(const sparse_matrix &m)
 {
     for (int i = 0; i < width; i++)
         for (int j = 0; j < height; j++)
-            if (data[i][j] != 0) data[i][j] += m[i][j];
+            data[i][j] += m[i][j];
     this->clean();
     return *this;
 }
@@ -94,7 +89,7 @@ sparse_matrix &sparse_matrix::operator-=(const sparse_matrix &m)
 {
     for (int i = 0; i < width; i++)
         for (int j = 0; j < height; j++)
-            if (data[i][j] != 0) data[i][j] -= m[i][j];
+            data[i][j] -= m[i][j];
     this->clean();
     return *this;
 }
@@ -105,7 +100,7 @@ sparse_vector sparse_matrix::operator*(const sparse_vector &v) const
     sparse_vector result(n);
 
     for(int i = 0; i < n; i++)
-        result[i] = data[i].sum() * v[i];
+        result[i] = data[i].dot(v);
 
     return result;
 }
@@ -133,4 +128,3 @@ bool sparse_matrix::operator!=(const sparse_matrix &m)
 {
     return !(*this == m);
 }
-
