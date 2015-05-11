@@ -7,6 +7,7 @@
 #include <sstream>
 #include <map>
 #include "sparse_matrix.h"
+#include <stdexcept>
 
 using namespace std;
 
