@@ -64,13 +64,13 @@ void sparse_matrix::transpose()
 	{
 		dir = row_wise;
 		init();
-		createMatrixByCols(raw_data);
+		createMatrixByRows(raw_data);
 	}
 	else
 	{
 		dir = column_wise;
 		init();
-		createMatrixByRows(raw_data);
+		createMatrixByCols(raw_data);
 	}
 }
 

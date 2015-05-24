@@ -9,7 +9,7 @@
 
 using namespace std;
 
-#define DEBUG 1
+#define MAIN_DEBUG 1
 
 void printHelp(int rank)
 {
@@ -56,8 +56,8 @@ int main (int argc, char *argv[])
 
     MpiMatrixHelper mpi_helper(rank, size);
 
-    auto m1 = mpi_helper.load("mat", sparse, column_wise);
-    auto m2 = mpi_helper.load("mat", sparse, row_wise);
+    auto m1 = mpi_helper.load("verybig", sparse, column_wise, 1);
+    auto m2 = mpi_helper.load("verybig", sparse, row_wise, 1);
 
     sparse_matrix mult_result = mpi_helper.mul(m1, m2);
     sparse_matrix add_result = mpi_helper.add(m1, m2);
@@ -65,39 +65,48 @@ int main (int argc, char *argv[])
     sparse_matrix L, U, CL, CU;
 
     mpi_helper.LU(m1, CL, CU);
+    auto CLU = mpi_helper.mul(CL, CU);
+    if(rank == 0)
+    {
+        if (CLU == m1) printf("LU SUCCESS!!\n");
+        else
+        {
+            printf("LU FAILURE!! Result:\n");
+            CLU.printDense();
+        }
+    }
+
     mpi_helper.ILU(m1, L, U);
-//
-//    // CG non-mpi test
+
+    // CG non-mpi test
     int n = m1.getHeight();
     if(rank == 0) printf("n = %d\n", n);
     sparse_vector b(n, column_wise);
     for(int i=0; i<n; i++)
         b[i] = 1;
     auto cg_result = mpi_helper.CG(m1, b);
-    if (rank == 0)
-    {
-        printf("RESULT X =\n");
-        cg_result.print();
-    }
+//    if (rank == 0)
+//    {
+//        printf("RESULT X =\n");
+//        cg_result.print();
+//    }
 
-    printM(rank, m1, "Matrix 1");
-    printM(rank, m2, "Matrix 2");
-    printM(rank, mult_result, "Multiplication");
-    printM(rank, add_result, "Sum");
-    printLU(rank, L, U, "ILU ");
-    printLU(rank, CL, CU, "LU ");
-    sparse_matrix LU = mpi_helper.mul(CL, CU);
-    printM(rank, LU, "L*U");
+//    printM(rank, m1, "Matrix 1");
+//    printM(rank, m2, "Matrix 2");
+//    printM(rank, mult_result, "Multiplication");
+//    printM(rank, add_result, "Sum");
+//    printLU(rank, L, U, "ILU ");
+//    printLU(rank, CL, CU, "LU ");
 
     // Check
     if(rank == 0)
     {
         auto wyn = m1 * cg_result;
 
-        if (wyn == b) printf("SUCCESS!!\n");
+        if (wyn == b) printf("CG SUCCESS!!\n");
         else
         {
-            printf("FAILURE!! Result is:\n");
+            printf("CG FAILURE!! Result is:\n");
             wyn.print();
         }
     }

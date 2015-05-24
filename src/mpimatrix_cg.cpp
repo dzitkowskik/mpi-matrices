@@ -87,7 +87,7 @@ sparse_vector MpiMatrixHelper::CG(const sparse_matrix &A, const sparse_vector &b
     }
 
     if(rank == 0)
-        printf("\n\n ITER CNT = %d", iters);
+        printf("ITER CNT = %d\n", iters);
 
     return x;
 }

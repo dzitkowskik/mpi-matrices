@@ -20,7 +20,7 @@ public:
 	~MpiMatrixHelper();
 
 public:
-	sparse_matrix load(const char* path, MatrixType type, direction dir = column_wise);
+	sparse_matrix load(const char* path, MatrixType type, direction dir = column_wise, int offset = 0);
 
 	sparse_matrix add(const sparse_matrix &a, const sparse_matrix &b);
 	sparse_matrix sub(const sparse_matrix &a, const sparse_matrix &b);
