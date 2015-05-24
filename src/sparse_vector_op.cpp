@@ -33,7 +33,8 @@ std::vector<sparse_matrix_elem> sparse_vector::operator*(const sparse_vector &m)
 	{
 		for (int i = 0; i < length; i++)
 			value += get(i) * m.get(i);
-		result.push_back(sparse_matrix_elem{0, 0, value});
+		if (value != 0)
+			result.push_back(sparse_matrix_elem{0, 0, value});
 	}
 	else if (dir == m.dir) // result will be vector
 	{
@@ -48,13 +49,13 @@ std::vector<sparse_matrix_elem> sparse_vector::operator*(const sparse_vector &m)
 	}
 	else // result will be matrix
 	{
-		for (int i = 0; i < length; i++)
+		for (auto it = data.cbegin(); it != data.cend(); it++)
 		{
-			for (int j = 0; j < m.length; j++)
+			for (auto it_m = m.cbegin(); it_m != m.cend(); it_m++)
 			{
-				value = get(i) * m.get(j);
+				value = it->second * it_m->second;
 				if (value != 0)
-					result.push_back(sparse_matrix_elem{j, i, value});
+					result.push_back(sparse_matrix_elem{it_m->first, it->first, value});
 			}
 		}
 	}

@@ -72,8 +72,15 @@ sparse_matrix sparse_matrix::operator*(const sparse_matrix &m) const
     sparse_matrix result(m.width, height, dir);
 
     for (int i = 0; i < width; i++)
-        result += sparse_matrix(data[i] * m.data[i], m.width, height, dir);
-
+    {
+        vector<sparse_matrix_elem> part_result = data[i] * m.data[i];
+        for(vector<sparse_matrix_elem>::iterator it = part_result.begin(); it != part_result.end(); it++)
+        {
+            if(it->value != 0)
+                result[it->col][it->row] += it->value;
+        }
+    }
+    result.clean();
     return result;
 }
 

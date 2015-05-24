@@ -214,3 +214,13 @@ double sparse_vector::dot(const sparse_vector &other) const
 
 	return acc;
 }
+
+std::map<int, double>::const_iterator sparse_vector::cbegin() const
+{
+	return data.cbegin();
+}
+
+std::map<int, double>::const_iterator sparse_vector::cend() const
+{
+	return data.cend();
+}

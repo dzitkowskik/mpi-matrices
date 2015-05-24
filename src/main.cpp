@@ -57,8 +57,8 @@ int main (int argc, char *argv[])
 //        genRandomM(rank, size);
     printHelp(rank);
 
-    auto m1 = mpi_helper.load("mat", sparse);
-    auto m2 = mpi_helper.load("mat", sparse);
+    auto m1 = mpi_helper.load("big", sparse);
+    auto m2 = mpi_helper.load("big", sparse);
 
     sparse_matrix mult_result = mpi_helper.mul(m1, m2);
     sparse_matrix add_result = mpi_helper.add(m1, m2);
@@ -77,12 +77,12 @@ int main (int argc, char *argv[])
         cg_result.print();
     }
 
-    printM(rank, m1, "Matrix 1");
-    printM(rank, m2, "Matrix 2");
-    printM(rank, mult_result, "Multiplication");
-    printM(rank, add_result, "Sum");
-    printLU(rank, L, U, "ILU ");
-    printLU(rank, CL, CU, "LU ");
+//    printM(rank, m1, "Matrix 1");
+//    printM(rank, m2, "Matrix 2");
+//    printM(rank, mult_result, "Multiplication");
+//    printM(rank, add_result, "Sum");
+//    printLU(rank, L, U, "ILU ");
+//    printLU(rank, CL, CU, "LU ");
 
     MPI_Finalize();
     return 0;

@@ -61,7 +61,8 @@ public:
 public:
 	double get(int nIndex) const;
 	direction getDir() const;
-
+	std::map<int, double>::const_iterator cbegin() const;
+	std::map<int, double>::const_iterator cend() const;
 	void set(std::pair<int, double> item);
 	void set(int index, double value);
 	void setDir(direction d);

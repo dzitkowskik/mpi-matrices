@@ -6,18 +6,18 @@
 #include <ctime>
 #include <unistd.h>
 
-#define RANDOM_TESTS_COUNT 5
-#define MATRIX_SIZE 250
+#define RANDOM_TESTS_COUNT 2
+#define MATRIX_SIZE 400
 
 #define TEST_ADD 1
 #define TEST_MUL 1
-#define TEST_LU 1
+#define TEST_LU 0
 
 bool test_multiplication(int rank, int size, double &mpi_duration, double &normal_duration)
 {
     std::clock_t start;
     bool test_result = false;
-
+    MpiMatrixHelper helper(rank, size);
     mpi_duration = 0;
     normal_duration = 0;
 
@@ -28,14 +28,14 @@ bool test_multiplication(int rank, int size, double &mpi_duration, double &norma
       auto test_matrix_2 = gen.GenerateRandomMatrix(MATRIX_SIZE, MATRIX_SIZE, 2*MATRIX_SIZE, row_wise);
       
       start = std::clock();
-      auto sparse_result = test_matrix_1 * test_matrix_2;
+      auto sparse_result = helper.mul(test_matrix_1, test_matrix_2);
       mpi_duration += ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
 
       if (rank == 0)
       {
-        dense_matrix actual(sparse_result.matrix);
-        dense_matrix dense_m_1(test_matrix_1.matrix);
-        dense_matrix dense_m_2(test_matrix_2.matrix);
+        dense_matrix actual(sparse_result);
+        dense_matrix dense_m_1(test_matrix_1);
+        dense_matrix dense_m_2(test_matrix_2);
 
         start = std::clock();
         auto expected = dense_m_1 * dense_m_2;
@@ -74,7 +74,7 @@ bool test_addition(int rank, int size, double &mpi_duration, double &normal_dura
 {
     std::clock_t start;
     bool test_result = false;
-
+    MpiMatrixHelper helper(rank, size);
     mpi_duration = 0;
     normal_duration = 0;
 
@@ -84,14 +84,14 @@ bool test_addition(int rank, int size, double &mpi_duration, double &normal_dura
       auto test_matrix_1 = gen.GenerateRandomMatrix(MATRIX_SIZE, MATRIX_SIZE, 2*MATRIX_SIZE, column_wise);
       auto test_matrix_2 = gen.GenerateRandomMatrix(MATRIX_SIZE, MATRIX_SIZE, 2*MATRIX_SIZE, column_wise);
       start = std::clock();
-      auto sparse_result = test_matrix_1 + test_matrix_2;
+      auto sparse_result = helper.add(test_matrix_1, test_matrix_2);
       mpi_duration += ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
       
       if (rank == 0)
       {
-        dense_matrix actual(sparse_result.matrix);
-        dense_matrix dense_m_1(test_matrix_1.matrix);
-        dense_matrix dense_m_2(test_matrix_2.matrix);
+        dense_matrix actual(sparse_result);
+        dense_matrix dense_m_1(test_matrix_1);
+        dense_matrix dense_m_2(test_matrix_2);
         
         start = std::clock();
         auto expected = dense_m_1 + dense_m_2;
@@ -122,38 +122,6 @@ bool test_addition(int rank, int size, double &mpi_duration, double &normal_dura
     mpi_duration /= RANDOM_TESTS_COUNT;
     normal_duration /= RANDOM_TESTS_COUNT;
     return true;
-}
-
-bool test_lu(int rank, int size)
-{
-    int result = 0;
-
-    Generator gen(rank, size);
-    MpiMatrix test_matrix = MpiMatrix::load("/tmp/mat", rank, size, sparse);
-    MpiMatrix test_matrix_L = MpiMatrix::load("/tmp/matL", rank, size, dense);
-    MpiMatrix test_matrix_U = MpiMatrix::load("/tmp/matU", rank, size, dense);
-
-    MpiMatrix L, U;
-
-    test_matrix.LU(L, U);
-    result += L == test_matrix_L ? 1 : 0;
-    result += U == test_matrix_U ? 1 : 0;
-
-    if(result != 2)
-    {
-        printf("Matrix:\n");
-        test_matrix.print();
-        printf("Expected U:\n");
-        test_matrix_U.print();
-        printf("Expected L:\n");
-        test_matrix_L.print();
-        printf("Actual U:\n");
-        U.print();
-        printf("Actual L:\n");
-        L.print();
-    }
-
-    return result == 2;
 }
 
 int main(int argc, char** argv)
@@ -191,15 +159,6 @@ int main(int argc, char** argv)
     {
         if(rank == 0)
             printf("test_addition [FAIL]\n");
-    }
-
-    if(TEST_LU)
-    {
-        if(test_lu(rank, size))
-        {
-            if (rank == 0) printf("test_lu [SUCCESS]\n");
-        }
-        else if (rank == 0)  printf("test_lu [FAIL]\n");
     }
 
     MPI_Finalize();
