@@ -5,9 +5,20 @@
 #include "mpimatrix.h"
 #include <stdexcept>
 
-sparse_matrix MpiMatrixHelper::add(const sparse_matrix &a, const sparse_matrix &b)
+#define DEBUG_MPI_MATRIXHELPER_OP 0
+
+sparse_matrix MpiMatrixHelper::add(const sparse_matrix &aa, const sparse_matrix &bb)
 {
+    #if DEBUG_MPI_MATRIXHELPER_OP
+        if(rank == 0) printf("MpiMatrixHelper: START ADD\n");
+    #endif
+
     int done = 0;
+    sparse_matrix a(aa);
+    sparse_matrix b(bb);
+
+    if(a.getDir() != b.getDir()) b.transpose();
+
     sparse_matrix result(a.getWidth(), a.getHeight(), column_wise);
 
     if (rank == 0)
@@ -18,6 +29,7 @@ sparse_matrix MpiMatrixHelper::add(const sparse_matrix &a, const sparse_matrix &
         if (a.getWidth() < processors_cnt || processors_cnt == 1)
         {
             // Do sequential addition
+            printf("Doing sequential addition\n");
             result = a + b;
             done = 1;
         }
@@ -60,16 +72,22 @@ sparse_matrix MpiMatrixHelper::add(const sparse_matrix &a, const sparse_matrix &
             sparse_matrix matrix1 = receiveMatrix(0, column_wise);
             sparse_matrix matrix2 = receiveMatrix(0, column_wise);
 
-//			printf("I am %d and received:\n", rank);
-//			printf("matrix1 (w=%d, h=%d): \n", matrix1.getWidth(), matrix1.getHeight());
-//			matrix1.printSparse();
-//			printf("matrix2 (w=%d, h=%d): \n", matrix2.getWidth(), matrix2.getHeight());
-//			matrix2.printSparse();
+    #if DEBUG_MPI_MATRIXHELPER_OP
+			printf("I am %d and received:\n", rank);
+			printf("matrix1 (w=%d, h=%d): \n", matrix1.getWidth(), matrix1.getHeight());
+			matrix1.printSparse();
+			printf("matrix2 (w=%d, h=%d): \n", matrix2.getWidth(), matrix2.getHeight());
+			matrix2.printSparse();
+    #endif
 
             result = matrix1 + matrix2;
             sendMatrix(0, result);
         }
     }
+
+    #if DEBUG_MPI_MATRIXHELPER_OP
+        if(rank == 0) printf("MpiMatrixHelper: END ADD\n");
+    #endif
 
     return result;
 }
@@ -237,21 +255,26 @@ void MpiMatrixHelper::subto(sparse_matrix &to, const sparse_matrix &what)
             sparse_matrix matrix1 = receiveMatrix(0, column_wise);
             sparse_matrix matrix2 = receiveMatrix(0, column_wise);
 
-//            printf("Received matrix 1 (%dx%d):\n", matrix1.getWidth(), matrix1.getHeight());
-//            matrix1.printSparse();
-//            printf("Received matrix 2 (%dx%d):\n", matrix2.getWidth(), matrix2.getHeight());
-//            matrix2.printSparse();
-
             matrix1 -= matrix2;
             sendMatrix(0, matrix1);
         }
     }
 }
 
-sparse_matrix MpiMatrixHelper::mul(const sparse_matrix &a, const sparse_matrix &b)
+sparse_matrix MpiMatrixHelper::mul(const sparse_matrix &aa, const sparse_matrix &bb)
 {
+    #if DEBUG_MPI_MATRIXHELPER_OP
+        if(rank == 0) printf("MpiMatrixHelper: START MUL\n");
+    #endif
+
     int done = 0;
+    sparse_matrix a(aa);
+    sparse_matrix b(bb);
+
     sparse_matrix result(b.getWidth(), a.getHeight(), column_wise);
+
+    if(a.getDir() == row_wise) a.transpose();
+    if(b.getDir() == column_wise) b.transpose();
 
     if (rank == 0)
     {
@@ -261,6 +284,7 @@ sparse_matrix MpiMatrixHelper::mul(const sparse_matrix &a, const sparse_matrix &
         if (a.getWidth() < processors_cnt || processors_cnt == 1)
         {
             // Do sequential multiplication
+            printf("Doing sequential multiplication!\n");
             result = a * b;
             done = 1;
         }
@@ -293,16 +317,22 @@ sparse_matrix MpiMatrixHelper::mul(const sparse_matrix &a, const sparse_matrix &
             sparse_matrix col_matrix = receiveMatrix(0, column_wise);
             sparse_matrix row_matrix = receiveMatrix(0, row_wise);
 
-//			printf("I am %d and received:\n", rank);
-//			printf("col_matrix (w=%d, h=%d): \n", col_matrix.getWidth(), col_matrix.getHeight());
-//			col_matrix.printSparse();
-//			printf("row_matrix (w=%d, h=%d): \n", row_matrix.getWidth(), row_matrix.getHeight());
-//			row_matrix.printSparse();
+    #if DEBUG_MPI_MATRIXHELPER_OP
+			printf("I am %d and received:\n", rank);
+			printf("col_matrix (w=%d, h=%d): \n", col_matrix.getWidth(), col_matrix.getHeight());
+			col_matrix.printSparse();
+			printf("row_matrix (w=%d, h=%d): \n", row_matrix.getWidth(), row_matrix.getHeight());
+			row_matrix.printSparse();
+    #endif
 
             result = col_matrix * row_matrix;
             sendMatrix(0, result);
         }
     }
+
+    #if DEBUG_MPI_MATRIXHELPER_OP
+        if(rank == 0) printf("MpiMatrixHelper: END MUL\n");
+    #endif
 
     return result;
 }

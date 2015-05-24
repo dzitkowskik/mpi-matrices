@@ -8,6 +8,7 @@
 #include <map>
 #include "sparse_matrix.h"
 #include <stdexcept>
+#include <iostream>
 
 using namespace std;
 
@@ -95,7 +96,7 @@ void sparse_matrix::createMatrixByCols(vector<sparse_matrix_elem> elements)
 	}
 }
 
-vector<sparse_matrix_elem> readSparseElements(const char *name)
+vector<sparse_matrix_elem> readSparseElements(const char *name, int offset)
 {
 	vector<sparse_matrix_elem> elements;
 	string line;
@@ -110,7 +111,7 @@ vector<sparse_matrix_elem> readSparseElements(const char *name)
 		{
 			throw std::runtime_error(string("Error while reading file: ") + name);
 		}
-		elements.push_back(sparse_matrix_elem{col, row, val});
+		elements.push_back(sparse_matrix_elem{col-offset, row-offset, val});
 	}
 	return elements;
 }
@@ -138,9 +139,10 @@ vector<sparse_matrix_elem> readDenseElements(const char *name, int &w, int &h)
 	return elements;
 }
 
-sparse_matrix sparse_matrix::fromSparseFile(const char *name, direction d)
+sparse_matrix sparse_matrix::fromSparseFile(const char *name, direction d, int offset)
 {
-	return sparse_matrix(readSparseElements(name), 0, 0, d);
+	auto elements = readSparseElements(name, offset);
+	return sparse_matrix(elements, 0, 0, d);
 }
 
 sparse_matrix sparse_matrix::fromDenseFile(const char *name, direction d)
@@ -159,6 +161,18 @@ void sparse_matrix::printSparse() const
 		printf("%d\t%d\t%f\n", it->col, it->row, it->value);
 	}
 	printf("\n");
+	printf("\n");
+}
+
+void sparse_matrix::printDense() const
+{
+	for(int i=0; i < width; i++)
+	{
+		for (int j = 0; j < height; j++)
+			printf("%2.3f ", data[j].get(i));
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
 }
 
 vector<pair<sparse_matrix, int>> sparse_matrix::splitToN(int N) const

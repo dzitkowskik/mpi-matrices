@@ -7,7 +7,7 @@
 #include <unistd.h>
 
 #define RANDOM_TESTS_COUNT 2
-#define MATRIX_SIZE 400
+#define MATRIX_SIZE 600
 
 #define TEST_ADD 1
 #define TEST_MUL 1
@@ -24,8 +24,8 @@ bool test_multiplication(int rank, int size, double &mpi_duration, double &norma
     for(int i = 0; i < RANDOM_TESTS_COUNT; i++)
     {
       Generator gen(rank, size);
-      auto test_matrix_1 = gen.GenerateRandomMatrix(MATRIX_SIZE, MATRIX_SIZE, 2*MATRIX_SIZE, column_wise);
-      auto test_matrix_2 = gen.GenerateRandomMatrix(MATRIX_SIZE, MATRIX_SIZE, 2*MATRIX_SIZE, row_wise);
+      auto test_matrix_1 = gen.GenerateRandomMatrix(MATRIX_SIZE, MATRIX_SIZE, 40*MATRIX_SIZE, column_wise);
+      auto test_matrix_2 = gen.GenerateRandomMatrix(MATRIX_SIZE, MATRIX_SIZE, 40*MATRIX_SIZE, row_wise);
       
       start = std::clock();
       auto sparse_result = helper.mul(test_matrix_1, test_matrix_2);

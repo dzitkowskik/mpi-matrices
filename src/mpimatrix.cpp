@@ -49,8 +49,8 @@ void MpiMatrixHelper::init()
 sparse_matrix MpiMatrixHelper::load(const char *path, MatrixType type, direction dir)
 {
     if (rank != 0) return sparse_matrix();
-    if (type == sparse) return sparse_matrix::fromSparseFile(path, column_wise);
-    else if (type == dense) return sparse_matrix::fromDenseFile(path, column_wise);
+    if (type == sparse) return sparse_matrix::fromSparseFile(path, dir, 1);
+    else if (type == dense) return sparse_matrix::fromDenseFile(path, dir);
     else throw std::runtime_error("wrong data matrix file type");
 }
 

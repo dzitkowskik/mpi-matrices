@@ -5,8 +5,14 @@
 #include "mpimatrix.h"
 #include <stdexcept>
 
+#define DEBUG_MPI_MATRIXHELPER_LU 0
+
 void MpiMatrixHelper::LU(const sparse_matrix &A, sparse_matrix &L, sparse_matrix &U)
 {
+    #if DEBUG_MPI_MATRIXHELPER_LU
+        if (rank == 0) printf("MpiMatrixHelper: START LU\n");
+    #endif
+
     int done = 0;
     int width = A.getWidth();
     int height = A.getHeight();
@@ -36,7 +42,7 @@ void MpiMatrixHelper::LU(const sparse_matrix &A, sparse_matrix &L, sparse_matrix
         if (!done)
         {
             // Split the matrix to submatrices
-            auto matrices = A.splitToN(processors_cnt - 1);
+            auto matrices = local.splitToN(processors_cnt - 1);
 
             // Send submatrices to processors with their positions and with of original matrix
             int pos = 0;
@@ -66,13 +72,16 @@ void MpiMatrixHelper::LU(const sparse_matrix &A, sparse_matrix &L, sparse_matrix
 
         int min = pos;
         int len = n / (processors_cnt - 1);
-        int max = rank == processors_cnt - 1 ? n - 1 : len - 1;
+        int max = rank == processors_cnt - 1 ? n - 1 : min + len - 1;
 
-//        printf("I am proc nr %d and got n = %d and pos = %d\n", rank, n, pos);
-//        printf("have min = %d, max = %d and matrix:\n", min, max);
-//        local.printSparse();
-//        printf("Width = %d, height = %d\n", width, height);
-//        printf("\n");
+    #if DEBUG_MPI_MATRIXHELPER_LU
+        printf("\n");
+        printf("I am proc nr %d and got n = %d and pos = %d and len = %d\n", rank, n, pos, len);
+        printf("have min = %d, max = %d and matrix:\n", min, max);
+        local.printSparse();
+        printf("Width = %d, height = %d\n", width, height);
+        printf("\n");
+    #endif
 
         // Compute
         for (int k = 0; k < n; k++)
@@ -103,10 +112,18 @@ void MpiMatrixHelper::LU(const sparse_matrix &A, sparse_matrix &L, sparse_matrix
         L = local.getL();
         U = local.getU();
     }
+
+    #if DEBUG_MPI_MATRIXHELPER_LU
+        if (rank == 0) printf("MpiMatrixHelper: END LU\n");
+    #endif
 }
 
 void MpiMatrixHelper::ILU(const sparse_matrix &A, sparse_matrix &L, sparse_matrix &U)
 {
+    #if DEBUG_MPI_MATRIXHELPER_LU
+        if (rank == 0) printf("MpiMatrixHelper: START ILU\n");
+    #endif
+
     int done = 0;
     int width = A.getWidth();
     int height = A.getHeight();
@@ -138,7 +155,7 @@ void MpiMatrixHelper::ILU(const sparse_matrix &A, sparse_matrix &L, sparse_matri
         if (!done)
         {
             // Split the matrix to submatrices
-            auto matrices = A.splitToN(processors_cnt - 1);
+            auto matrices = local.splitToN(processors_cnt - 1);
 
             // Send submatrices to processors with their positions and with of original matrix
             int pos = 0;
@@ -168,7 +185,16 @@ void MpiMatrixHelper::ILU(const sparse_matrix &A, sparse_matrix &L, sparse_matri
 
         int min = pos;
         int len = n / (processors_cnt - 1);
-        int max = rank == processors_cnt - 1 ? n - 1 : len - 1;
+        int max = rank == processors_cnt - 1 ? n - 1 : min + len - 1;
+
+    #if DEBUG_MPI_MATRIXHELPER_LU
+        printf("\n");
+        printf("I am proc nr %d and got n = %d and pos = %d\n", rank, n, pos);
+        printf("have min = %d, max = %d and matrix:\n", min, max);
+        local.printSparse();
+        printf("Width = %d, height = %d\n", width, height);
+        printf("\n");
+    #endif
 
         // Compute
         for (int k = 0; k < n; k++)
@@ -200,4 +226,8 @@ void MpiMatrixHelper::ILU(const sparse_matrix &A, sparse_matrix &L, sparse_matri
         L = local.getL();
         U = local.getU();
     }
+
+    #if DEBUG_MPI_MATRIXHELPER_LU
+        if (rank == 0) printf("MpiMatrixHelper: END ILU\n");
+    #endif
 }

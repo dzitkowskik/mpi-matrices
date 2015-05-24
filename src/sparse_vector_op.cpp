@@ -87,7 +87,6 @@ sparse_vector sparse_vector::operator+(const double &m) const
 	if (m == 0) return result;
 	for (int i = 0; i < result.size(); i++)
 		result.add(i, m);
-	result.clean();
 	return result;
 }
 
@@ -97,7 +96,6 @@ sparse_vector sparse_vector::operator-(const double &m) const
 	if (m == 0) return result;
 	for (int i = 0; i < result.size(); i++)
 		result.sub(i, m);
-	result.clean();
 	return result;
 }
 
@@ -158,18 +156,16 @@ sparse_vector &sparse_vector::operator/=(const double &v)
 sparse_vector& sparse_vector::operator+=(const sparse_vector &v)
 {
 	assert(length == v.size());
-	for(int i=0; i < length; i++)
-		set(i, get(i)+v[i]);
-	this->clean();
+	for(auto it=v.cbegin(); it != v.cend(); it++)
+		this->add(*it);
 	return *this;
 }
 
 sparse_vector& sparse_vector::operator-=(const sparse_vector &v)
 {
 	assert(length == v.size());
-	for(int i=0; i < length; i++)
-		set(i, get(i)-v[i]);
-	this->clean();
+	for(auto it=v.cbegin(); it != v.cend(); it++)
+		this->sub(*it);
 	return *this;
 }
 

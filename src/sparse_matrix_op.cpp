@@ -5,91 +5,49 @@
 #include <stdio.h>
 #include "sparse_matrix.h"
 
-void addToMap(map<pair<int, int>, double> *value_map, const vector<sparse_matrix_elem> &v)
-{
-    for (auto it = v.cbegin(); it != v.cend(); it++)
-    {
-        auto key = make_pair(it->col, it->row);
-        if (value_map->count(key) > 0)
-            (*value_map)[key] += it->value;
-        else value_map->insert(pair<pair<int, int>, double>(key, it->value));
-    }
-}
-
-void subToMap(map<pair<int, int>, double> *value_map, const vector<sparse_matrix_elem> &v)
-{
-    for (auto it = v.cbegin(); it != v.cend(); it++)
-    {
-        auto key = make_pair(it->col, it->row);
-        if (value_map->count(key) > 0)
-            (*value_map)[key] -= it->value;
-        else value_map->insert(pair<pair<int, int>, double>(key, it->value));
-    }
-}
-
 sparse_matrix sparse_matrix::operator+(const sparse_matrix &m) const
 {
-    vector<sparse_matrix_elem> elements;
-    try
-    {
-        map<pair<int, int>, double> value_map;
-        addToMap(&value_map, getRawData());
-        addToMap(&value_map, m.getRawData());
-        for (map<pair<int, int>, double>::iterator it = value_map.begin(); it != value_map.end(); it++)
-        {
-            elements.push_back(sparse_matrix_elem{get<0>(it->first), get<1>(it->first), it->second});
-        }
-    }
-    catch (exception e)
-    {
-        printf("sparse_matrix operator+ : %s", e.what());
-    }
-    return sparse_matrix(elements, width, height, dir);
+    if(dir != m.getDir()) throw new std::runtime_error("adding matrices with different directions");
+    int w = width > m.getWidth() ? width : m.getWidth();
+    int h = height > m.getHeight() ? height : m.getHeight();
+    sparse_matrix result(w, h, dir);
+    for(int i=0; i<data.size(); i++)
+        result[i] = data[i] + m[i];
+    return result;
 }
 
 sparse_matrix sparse_matrix::operator-(const sparse_matrix &m) const
 {
-    vector<sparse_matrix_elem> elements;
-    try
-    {
-        map<pair<int, int>, double> value_map;
-        subToMap(&value_map, getRawData());
-        subToMap(&value_map, m.getRawData());
-        for (map<pair<int, int>, double>::iterator it = value_map.begin(); it != value_map.end(); it++)
-        {
-            elements.push_back(sparse_matrix_elem{get<0>(it->first), get<1>(it->first), it->second});
-        }
-    }
-    catch (exception e)
-    {
-        printf("sparse_matrix operator+ : %s", e.what());
-    }
-    return sparse_matrix(elements, width, height, dir);
+    if(dir != m.getDir()) throw new std::runtime_error("adding matrices with different directions");
+    int w = width > m.getWidth() ? width : m.getWidth();
+    int h = height > m.getHeight() ? height : m.getHeight();
+    sparse_matrix result(w, h, dir);
+    for(int i=0; i<data.size(); i++)
+        result[i] = data[i] - m[i];
+    return result;
 }
 
 sparse_matrix sparse_matrix::operator*(const sparse_matrix &m) const
 {
     sparse_matrix result(m.width, height, dir);
 
-    for (int i = 0; i < width; i++)
+    for (int i = 0; i < data.size(); i++)
     {
         vector<sparse_matrix_elem> part_result = data[i] * m.data[i];
         for(vector<sparse_matrix_elem>::iterator it = part_result.begin(); it != part_result.end(); it++)
         {
-            if(it->value != 0)
-                result[it->col][it->row] += it->value;
+            result[it->col][it->row] += it->value;
         }
     }
-    result.clean();
+//    result.clean();
     return result;
 }
 
 sparse_matrix &sparse_matrix::operator+=(const sparse_matrix &m)
 {
-    for (int i = 0; i < width; i++)
-        for (int j = 0; j < height; j++)
-            data[i][j] += m[i][j];
-    this->clean();
+    if(dir != m.getDir()) throw new std::runtime_error("adding matrices with different directions");
+    for (int i = 0; i < data.size(); i++)
+            data[i] += m[i];
     return *this;
 }
 

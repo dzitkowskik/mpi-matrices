@@ -115,7 +115,7 @@ void sparse_vector::add(std::pair<int, double> item)
 	if (data.count(item.first) > 0)
 		data[item.first] += item.second;
 	else data.insert(item);
-	clean();
+	if (data[item.first] == 0) data.erase(item.first);
 }
 
 void sparse_vector::add(int index, double value)
@@ -158,7 +158,7 @@ void sparse_vector::div(std::pair<int, double> item)
 		throw std::runtime_error("mul a non existing item");
 	if (data.count(item.first) > 0)
 	{
-		if (item.second == 0) data.erase(item.first);
+		if (item.second == 0) throw new std::runtime_error("divide by zero!");
 		else data[item.first] /= item.second;
 	}
 }

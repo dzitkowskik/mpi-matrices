@@ -56,10 +56,11 @@ public:
 	void init();
 	void clean();
 	void printSparse() const;
+	void printDense() const;
 	void createMatrixByRows(vector<sparse_matrix_elem> elements);
 	void createMatrixByCols(vector<sparse_matrix_elem> elements);
 	vector<std::pair<sparse_matrix, int>> splitToN(int N) const;
-	static sparse_matrix fromSparseFile(const char *name, direction d);
+	static sparse_matrix fromSparseFile(const char *name, direction d, int offset = 0);
 	static sparse_matrix fromDenseFile(const char *name, direction d);
 	vector<sparse_matrix_elem> getRawData() const;
 	int getWidth() const;

@@ -5,7 +5,7 @@
 #include "mpimatrix.h"
 
 #define CG_EPS 0.001
-#define CG_MAX_ITERS 10
+#define CG_MAX_ITERS 1000
 
 sparse_vector solveILU(const sparse_matrix &L, const sparse_matrix &U, const sparse_vector &b)
 {
@@ -40,7 +40,7 @@ sparse_vector MpiMatrixHelper::CG(const sparse_matrix &A, const sparse_vector &b
 {
     sparse_vector x(b.size(), column_wise);
     sparse_matrix L, U;
-    ILU(A, L, U);
+    LU(A, L, U);
 
     double alpha, beta, rho0, rho1, norm_b, residual;
     sparse_vector p, z, q, r;
@@ -53,8 +53,10 @@ sparse_vector MpiMatrixHelper::CG(const sparse_matrix &A, const sparse_vector &b
         residual = r.l2_norm() / norm_b;
     }
 
+    int iters = 0;
     for(int iteration = 1; iteration <= CG_MAX_ITERS; iteration++)
     {
+        iters++;
         MPI_Bcast(&residual, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         if(residual <= CG_EPS) break;
 
@@ -83,6 +85,9 @@ sparse_vector MpiMatrixHelper::CG(const sparse_matrix &A, const sparse_vector &b
             residual = r.l2_norm() / norm_b;
         }
     }
+
+    if(rank == 0)
+        printf("\n\n ITER CNT = %d", iters);
 
     return x;
 }
