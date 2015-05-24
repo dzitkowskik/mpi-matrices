@@ -2,6 +2,7 @@
 // Created by Karol Dzitkowski on 04.05.15.
 //
 
+#include <stdio.h>
 #include "sparse_matrix.h"
 
 void addToMap(map<pair<int, int>, double> *value_map, const vector<sparse_matrix_elem> &v)

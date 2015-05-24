@@ -4,6 +4,8 @@
 
 #include <assert.h>
 #include "sparse_vector.h"
+#include <math.h>
+#include <stdexcept>
 
 sparse_vector sparse_vector::operator+(const sparse_vector &m) const
 {

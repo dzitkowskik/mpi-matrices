@@ -3,6 +3,7 @@
 //
 
 #include "mpimatrix.h"
+#include <stdexcept>
 
 sparse_matrix MpiMatrixHelper::add(const sparse_matrix &a, const sparse_matrix &b)
 {

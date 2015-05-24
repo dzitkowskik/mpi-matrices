@@ -3,6 +3,7 @@
 //
 
 #include "mpimatrix.h"
+#include <stdexcept>
 
 void MpiMatrixHelper::LU(const sparse_matrix &A, sparse_matrix &L, sparse_matrix &U)
 {

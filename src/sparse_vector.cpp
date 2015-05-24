@@ -4,6 +4,8 @@
 
 #include "sparse_vector.h"
 #include <math.h>
+#include <stdexcept>
+#include <stdio.h>
 #include <assert.h>
 
 // CONSTRUCTORS
