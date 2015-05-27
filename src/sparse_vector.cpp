@@ -95,7 +95,7 @@ void sparse_vector::clean()
 {
 	for (auto it = data.begin(); it != data.end();)
 	{
-		if (it->second == 0) data.erase(it++);
+		if (fabs(it->second) < 1e-6) data.erase(it++);
 		else ++it;
 	}
 }

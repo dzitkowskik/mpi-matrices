@@ -45,6 +45,15 @@ void sparse_matrix::init()
 	for (int i = 0; i < w_size; i++) data[i].reset(h_size, dir);
 }
 
+sparse_matrix sparse_matrix::identity(int size, direction dir)
+{
+	vector<sparse_matrix_elem> elements;
+	for(int i=0; i<size; i++)
+		elements.push_back(sparse_matrix_elem{i, i, 1});
+
+	return sparse_matrix(elements, size, size, dir);
+}
+
 void sparse_matrix::resize(int w, int h)
 {
 	width = w;
@@ -56,7 +65,7 @@ void sparse_matrix::resize(int w, int h)
 		data[i].reset(h_size, dir);
 }
 
-void sparse_matrix::transpose()
+void sparse_matrix::toggleDir()
 {
 	auto raw_data = getRawData();
 	std::swap(width, height);
@@ -72,6 +81,25 @@ void sparse_matrix::transpose()
 		init();
 		createMatrixByCols(raw_data);
 	}
+}
+
+void sparse_matrix::transpose()
+{
+	if(width != height)
+		throw new std::runtime_error(
+				"Dimensions of matrix must match when transposing!");
+
+	auto raw_data = getRawData();
+
+	// transpose data
+	for(auto it = raw_data.begin(); it != raw_data.end(); it++)
+		*it = sparse_matrix_elem{it->row, it->col, it->value};
+
+	init();
+	if (dir == column_wise)
+		createMatrixByCols(raw_data);
+	else
+		createMatrixByRows(raw_data);
 }
 
 void sparse_matrix::createMatrixByRows(vector<sparse_matrix_elem> elements)

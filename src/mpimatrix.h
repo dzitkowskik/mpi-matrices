@@ -25,17 +25,25 @@ public:
 	sparse_matrix add(const sparse_matrix &a, const sparse_matrix &b);
 	sparse_matrix sub(const sparse_matrix &a, const sparse_matrix &b);
 	sparse_matrix mul(const sparse_matrix &a, const sparse_matrix &b);
-//	sparse_matrix div(const sparse_matrix &a, const sparse_matrix &b);
+
 	void addto(sparse_matrix &to, const sparse_matrix &what);
 	void subto(sparse_matrix &to, const sparse_matrix &what);
-//	void multo(sparse_matrix &to, const sparse_matrix &what);
-//	void divto(sparse_matrix &to, const sparse_matrix &what);
 
 	sparse_vector mul(const sparse_matrix &A, const sparse_vector &x);
 
 	void LU(const sparse_matrix &A, sparse_matrix &L, sparse_matrix &U);
 	void ILU(const sparse_matrix &A, sparse_matrix &L, sparse_matrix &U);
+
+	sparse_vector solveTrian(const sparse_matrix &A, const sparse_vector &b);
+	sparse_matrix SolveManyTrian(const sparse_matrix &A, const sparse_matrix &B);
+	sparse_matrix Inverse(const sparse_matrix &A);
 	sparse_vector CG(const sparse_matrix &A, const sparse_vector &b);
+	sparse_vector CG_ILU(const sparse_matrix &A, const sparse_vector &b);
+	sparse_vector CG_ILU_PRECONDITIONED(const sparse_matrix &A, const sparse_vector &b);
+	sparse_vector CG_ILU_PRECONDITIONED_COPY(const sparse_matrix &A, const sparse_vector &b);
+	sparse_vector PRECONDITIONED_2(const sparse_matrix &A, const sparse_vector &b, const sparse_matrix &M_inv);
+	sparse_vector CG_ILU_PRECONDITIONED_2(const sparse_matrix &A, const sparse_vector &b);
+	sparse_vector CG_ILU_PRECONDITIONED_WITH_ILU(const sparse_matrix &A, const sparse_vector &b);
 
 private:
 	void init();

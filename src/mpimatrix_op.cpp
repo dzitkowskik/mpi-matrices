@@ -17,7 +17,7 @@ sparse_matrix MpiMatrixHelper::add(const sparse_matrix &aa, const sparse_matrix 
     sparse_matrix a(aa);
     sparse_matrix b(bb);
 
-    if(a.getDir() != b.getDir()) b.transpose();
+    if(a.getDir() != b.getDir()) b.toggleDir();
 
     sparse_matrix result(a.getWidth(), a.getHeight(), column_wise);
 
@@ -273,8 +273,8 @@ sparse_matrix MpiMatrixHelper::mul(const sparse_matrix &aa, const sparse_matrix 
 
     sparse_matrix result(b.getWidth(), a.getHeight(), column_wise);
 
-    if(a.getDir() == row_wise) a.transpose();
-    if(b.getDir() == column_wise) b.transpose();
+    if(a.getDir() == row_wise) a.toggleDir();
+    if(b.getDir() == column_wise) b.toggleDir();
 
     if (rank == 0)
     {
@@ -382,6 +382,7 @@ sparse_vector MpiMatrixHelper::mul(const sparse_matrix &A, const sparse_vector &
             sparse_matrix col_matrix = receiveMatrix(0, column_wise);
 
             result = col_matrix * vec;
+
             sendVector(0, result);
         }
     }

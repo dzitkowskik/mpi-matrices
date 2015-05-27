@@ -58,22 +58,25 @@ void MpiMatrixHelper::sendVector(int node, sparse_vector vector)
 {
     direction dir = vector.getDir();
     auto raw_data = vector.getElements(dir);
-    int size = raw_data.size();
+    int elem_cnt = raw_data.size();
+    int size = vector.size();
 
+    MPI_Send(&elem_cnt, 1, MPI_INT, node, 0, MPI_COMM_WORLD);
     MPI_Send(&size, 1, MPI_INT, node, 0, MPI_COMM_WORLD);
     MPI_Send(&dir, 1, MPI_INT, node, 0, MPI_COMM_WORLD);
-    MPI_Send(&raw_data.front(), size, sparse_elem_type, node, 0, MPI_COMM_WORLD);
+    MPI_Send(&raw_data.front(), elem_cnt, sparse_elem_type, node, 0, MPI_COMM_WORLD);
 }
 
 sparse_vector MpiMatrixHelper::receiveVector(int node)
 {
-    int size;
+    int size, elem_cnt;
     direction dir;
+    MPI_Recv(&elem_cnt, 1, MPI_INT, node, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     MPI_Recv(&size, 1, MPI_INT, node, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     MPI_Recv(&dir, 1, MPI_INT, node, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-    vector<sparse_matrix_elem> data(size);
-    MPI_Recv(&data[0], size, sparse_elem_type, node, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    vector<sparse_matrix_elem> data(elem_cnt);
+    MPI_Recv(&data[0], elem_cnt, sparse_elem_type, node, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
     return sparse_vector(size, dir, data);
 }

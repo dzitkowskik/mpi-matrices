@@ -63,7 +63,7 @@ sparse_matrix &sparse_matrix::operator-=(const sparse_matrix &m)
 sparse_vector sparse_matrix::operator*(const sparse_vector &v) const
 {
     auto n = v.size();
-    sparse_vector result(n);
+    sparse_vector result(n, v.getDir());
 
     if (dir == row_wise)
     {
@@ -71,7 +71,7 @@ sparse_vector sparse_matrix::operator*(const sparse_vector &v) const
             result[i] = data[i].dot(v);
     } else {
         auto local = *this;
-        local.transpose();
+        local.toggleDir();
         for (int i = 0; i < n; i++)
             result[i] = local[i].dot(v);
     }

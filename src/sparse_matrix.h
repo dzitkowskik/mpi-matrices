@@ -34,6 +34,8 @@ public:
 	~sparse_matrix();
 	sparse_matrix(const sparse_matrix &m);
 
+	static sparse_matrix identity(int size, direction dir = column_wise);
+
 // OPERATORS
 public:
 	sparse_matrix operator+(const sparse_matrix &m) const;
@@ -52,6 +54,7 @@ public:
 public:
 	void fill(vector<sparse_matrix_elem> elements);
 	void resize(int w, int h);
+	void toggleDir();
 	void transpose();
 	void init();
 	void clean();

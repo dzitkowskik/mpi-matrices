@@ -32,7 +32,7 @@ set(SOURCE_FILES
     src/sparse_matrix.h
     src/mpimatrix_cg.cpp)
 
-add_executable(mpi_matrices ${SOURCE_FILES})
+add_executable(mpi_matrices ${SOURCE_FILES} src/mpimatrix_prec.cpp)
 
 target_link_libraries(mpi_matrices ${MPI_LIBRARIES})
 

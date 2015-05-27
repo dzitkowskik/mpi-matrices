@@ -6,6 +6,7 @@
 #include "mpimatrix.h"
 #include "generator.h"
 #include "dense_matrix.h"
+#include <ctime>
 
 using namespace std;
 
@@ -49,15 +50,15 @@ void genRandomM(int rank, int size)
 int main (int argc, char *argv[])
 {
     int rank, size;
-
+    std::clock_t start;
     MPI_Init(&argc,&argv);
     MPI_Comm_rank(MPI_COMM_WORLD,&rank);
     MPI_Comm_size(MPI_COMM_WORLD,&size);
 
     MpiMatrixHelper mpi_helper(rank, size);
 
-    auto m1 = mpi_helper.load("verybig", sparse, column_wise, 1);
-    auto m2 = mpi_helper.load("verybig", sparse, row_wise, 1);
+    auto m1 = mpi_helper.load("big", sparse, column_wise, 1);
+    auto m2 = mpi_helper.load("big", sparse, row_wise, 1);
 
     sparse_matrix mult_result = mpi_helper.mul(m1, m2);
     sparse_matrix add_result = mpi_helper.add(m1, m2);
@@ -77,38 +78,40 @@ int main (int argc, char *argv[])
     }
 
     mpi_helper.ILU(m1, L, U);
+    if(rank == 0) printf("ILU DONE!\n");
+
+    auto L_inv = mpi_helper.Inverse(L);
+    auto I = mpi_helper.mul(L, L_inv);
+    if(rank == 0)
+    {
+        if (I == sparse_matrix::identity(L.getWidth()))
+            printf("INVERSE SUCCESS!!\n");
+        else printf("INVERSE FAILURE!!\n");
+    }
 
     // CG non-mpi test
     int n = m1.getHeight();
     if(rank == 0) printf("n = %d\n", n);
     sparse_vector b(n, column_wise);
     for(int i=0; i<n; i++)
-        b[i] = 1;
-    auto cg_result = mpi_helper.CG(m1, b);
-//    if (rank == 0)
-//    {
-//        printf("RESULT X =\n");
-//        cg_result.print();
-//    }
-
-//    printM(rank, m1, "Matrix 1");
-//    printM(rank, m2, "Matrix 2");
-//    printM(rank, mult_result, "Multiplication");
-//    printM(rank, add_result, "Sum");
-//    printLU(rank, L, U, "ILU ");
-//    printLU(rank, CL, CU, "LU ");
+        b[i] = i;
+    start = std::clock();
+    auto cg_result = mpi_helper.CG_ILU_PRECONDITIONED_WITH_ILU(m1, b);
+    auto time = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+    printf("TIME = %f\n", time);
 
     // Check
     if(rank == 0)
     {
-        auto wyn = m1 * cg_result;
+        sparse_vector wyn = m1 * cg_result;
 
         if (wyn == b) printf("CG SUCCESS!!\n");
         else
         {
             printf("CG FAILURE!! Result is:\n");
-            wyn.print();
+
         }
+        wyn.print();
     }
 
     MPI_Finalize();

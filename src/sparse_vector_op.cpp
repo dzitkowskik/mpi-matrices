@@ -9,6 +9,7 @@
 
 sparse_vector sparse_vector::operator+(const sparse_vector &m) const
 {
+	if(length != m.length) throw new std::runtime_error("size of vectors must match!");
 	auto result = sparse_vector(m);
 	for (auto it = data.cbegin(); it != data.cend(); it++)
 		result.add(*it);
@@ -65,7 +66,6 @@ std::vector<sparse_matrix_elem> sparse_vector::operator*(const sparse_vector &m)
 sparse_vector sparse_vector::operator*(const double &m) const
 {
 	auto result = sparse_vector(*this);
-	if (m == 0) result.clear();
 	for (int i = 0; i < result.size(); i++)
 		result.mul(i, m);
 	return result;
@@ -176,7 +176,7 @@ bool sparse_vector::operator==(const sparse_vector &v) const
 		for (int i = 0; i < length; i++)
 		{
 			double diff = (*this)[i] - v[i];
-			if (abs(diff) > 0.01) return false;
+			if (fabs(diff) > 0.01) return false;
 		}
 		return true;
 	}

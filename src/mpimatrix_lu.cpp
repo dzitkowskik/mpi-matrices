@@ -19,7 +19,7 @@ void MpiMatrixHelper::LU(const sparse_matrix &A, sparse_matrix &L, sparse_matrix
 
     sparse_matrix local(A);
     // We want to have column wise sparse matrix
-    if (local.getDir() == row_wise) local.transpose();
+    if (local.getDir() == row_wise) local.toggleDir();
 
     if (rank == 0)
     {
@@ -131,7 +131,7 @@ void MpiMatrixHelper::ILU(const sparse_matrix &A, sparse_matrix &L, sparse_matri
     sparse_matrix local(A);
 
     // We want to have column wise sparse matrix
-    if (local.getDir() == row_wise) local.transpose();
+    if (local.getDir() == row_wise) local.toggleDir();
 
     if (rank == 0)
     {
